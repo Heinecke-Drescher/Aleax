@@ -15,6 +15,7 @@ import { CELL_SIZE, type Square } from "../../room/grid";
 import { validMapText } from "../../room/texts";
 import { validToken } from "../../room/tokens";
 import { liftTokens } from "../tokens/liftTokens";
+import { endAboveFinger, isFinger } from "../tools/fingerOffset";
 import type { Measurement } from "../tools/measurement";
 import { cellOffset, roundToCells, squaresBounds } from "./selection";
 
@@ -27,6 +28,8 @@ interface Drag {
   others: { node: Node; start: Vector2d }[];
   lift: ReturnType<typeof liftTokens>;
   grabbedToken: Square | null;
+  // Read at the start, as a drag stopped by a second finger ends without an event.
+  byFinger: boolean;
 }
 
 export function useItemDrag(room: Room, selected: Items) {
@@ -69,6 +72,7 @@ export function useItemDrag(room: Room, selected: Items) {
       others: others.map((other) => ({ node: other, start: other.position() })),
       lift: liftTokens([node, ...others], reducesMotion),
       grabbedToken: tokens.find((token) => token.id === id) ?? null,
+      byFinger: isFinger(event.evt),
     };
   }
 
@@ -78,10 +82,16 @@ export function useItemDrag(room: Room, selected: Items) {
   }
 
   function offset(event: KonvaEventObject<DragEvent>) {
-    const { start, gridBounds, roundsToCells } = current();
+    const { start, gridBounds, roundsToCells, byFinger } = current();
     const node = event.target;
-    const dx = node.x() - start.x;
-    const dy = node.y() - start.y;
+    const stage = node.getStage();
+    if (!stage) throw new Error("Dragged item is not on a stage");
+    // Above the finger, so the finger hides neither the items nor the ruler.
+    const shown = byFinger
+      ? endAboveFinger(node.position(), start, stage.scaleY())
+      : node.position();
+    const dx = shown.x - start.x;
+    const dy = shown.y - start.y;
     if (!gridBounds)
       return roundsToCells ? roundToCells({ dx, dy }) : { dx, dy };
     const cells = cellOffset(

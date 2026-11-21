@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { endAboveFinger } from "./fingerOffset";
+import { endAboveFinger, isFinger } from "./fingerOffset";
 
 describe("endAboveFinger", () => {
   const press = { x: 100, y: 200 };
@@ -26,5 +26,22 @@ describe("endAboveFinger", () => {
     });
     // The same distance on the map is ten screen pixels when zoomed in.
     expect(endAboveFinger({ x: 105, y: 205 }, press, 2).y).toBe(175);
+  });
+});
+
+describe("isFinger", () => {
+  function pointerEvent(pointerType: string) {
+    return Object.assign(new Event("pointermove"), { pointerType });
+  }
+
+  it("tells a finger from a mouse and a pen", () => {
+    expect(isFinger(pointerEvent("touch"))).toBe(true);
+    expect(isFinger(pointerEvent("mouse"))).toBe(false);
+    expect(isFinger(pointerEvent("pen"))).toBe(false);
+  });
+
+  it("takes events without a pointer type for no finger", () => {
+    expect(isFinger(new Event("wheel"))).toBe(false);
+    expect(isFinger(undefined)).toBe(false);
   });
 });

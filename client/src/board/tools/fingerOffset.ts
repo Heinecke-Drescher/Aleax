@@ -2,8 +2,8 @@ import type { Vector2d } from "konva/lib/types";
 import { TAP_SCREEN_DISTANCE } from "../../tap";
 import type { ToolPointer } from "./tool";
 
-// A finger hides what lies under it, so the end of a ruler or shape it drags sits this many
-// screen pixels above it.
+// A finger hides what lies under it, so the end of a ruler or shape and the items it drags sit
+// this many screen pixels above it.
 const FINGER_OFFSET = 60;
 
 // Until the finger moves further than a tap, the end stays under it, so a tap creates nothing.
@@ -17,14 +17,19 @@ export function endAboveFinger(
   return { x: point.x, y: point.y - FINGER_OFFSET / scale };
 }
 
-// Mouse and pen keep the end under them; a wheel event has no pointer type.
+// A wheel event and a drag stopped without an event have no pointer type.
+export function isFinger(evt: Event | undefined) {
+  return (
+    evt !== undefined && "pointerType" in evt && evt.pointerType === "touch"
+  );
+}
+
+// Mouse and pen keep the end under them.
 export function draggedEnd(
   { point, event }: ToolPointer,
   press: Vector2d,
 ): Vector2d {
-  const isFinger =
-    "pointerType" in event.evt && event.evt.pointerType === "touch";
-  if (!isFinger) return point;
+  if (!isFinger(event.evt)) return point;
   const stage = event.target.getStage();
   if (!stage) throw new Error("Pointer event without stage");
   return endAboveFinger(point, press, stage.scaleY());
