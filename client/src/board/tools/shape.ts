@@ -3,7 +3,11 @@ import { useRef, useState } from "react";
 import { usePlayer } from "../../player/PlayerContext";
 import type { Room } from "../../room/createRoom";
 import { cellAt, containsCell, snapToCorner } from "../../room/grid";
-import { shapeCells, type AreaShape, type ShapeKind } from "../../room/shapes";
+import {
+  isEmptyShape,
+  type AreaShape,
+  type ShapeKind,
+} from "../../room/shapes";
 import { draggedEnd } from "./fingerOffset";
 import type { BoardTool } from "./tool";
 
@@ -41,7 +45,7 @@ export function useShapeTool(
     onUp() {
       const current = draftRef.current;
       updateDraft(null);
-      if (current && shapeCells(current) > 0) {
+      if (current && !isEmptyShape(current)) {
         onPlaced(room.addShape(color, current, !isDm));
       }
     },

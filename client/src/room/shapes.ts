@@ -3,7 +3,7 @@ import { CELL_SIZE, toCells } from "./grid";
 import { validPoint } from "./points";
 import { isRecord } from "./typeGuards";
 
-export type ShapeKind = "cone" | "square" | "circle";
+export type ShapeKind = "cone" | "rectangle" | "circle";
 
 export interface AreaShape {
   kind: ShapeKind;
@@ -12,7 +12,7 @@ export interface AreaShape {
 }
 
 export function isShapeKind(value: unknown): value is ShapeKind {
-  return value === "cone" || value === "square" || value === "circle";
+  return value === "cone" || value === "rectangle" || value === "circle";
 }
 
 export function validShape(value: unknown): AreaShape | null {
@@ -21,7 +21,7 @@ export function validShape(value: unknown): AreaShape | null {
   const to = validPoint(value.to);
   if (!from || !to) return null;
   const shape = { kind: value.kind, from, to };
-  return shapeCells(shape) > 0 ? shape : null;
+  return isEmptyShape(shape) ? null : shape;
 }
 
 export function shiftShape(
@@ -45,28 +45,40 @@ export function copyShape(shape: AreaShape) {
 const CONE_HALF_ANGLE = Math.atan(1 / 2);
 const CIRCLE_CORNERS = 64;
 
-export function shapeCells({ kind, from, to }: AreaShape) {
+// In cells: a rectangle's sides, a cone's length or a circle's radius (as both).
+export function shapeSize({ kind, from, to }: AreaShape) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
-  const distance =
-    kind === "square"
-      ? Math.max(Math.abs(dx), Math.abs(dy))
-      : Math.hypot(dx, dy);
-  return toCells(distance);
+  if (kind !== "rectangle") {
+    const length = toCells(Math.hypot(dx, dy));
+    return { width: length, height: length };
+  }
+  const width = toCells(Math.abs(dx));
+  const height = toCells(Math.abs(dy));
+  if (width === 0 && height === 0) return { width, height };
+  // Dragged along a grid line, a rectangle is still one cell wide.
+  return { width: Math.max(width, 1), height: Math.max(height, 1) };
+}
+
+export function isEmptyShape(shape: AreaShape) {
+  return shapeSize(shape).width === 0;
 }
 
 export function shapeOutline(shape: AreaShape): number[] | null {
   const { kind, from, to } = shape;
-  const cells = shapeCells(shape);
-  if (cells === 0) return null;
-  const size = cells * CELL_SIZE;
+  if (isEmptyShape(shape)) return null;
+  const { width, height } = shapeSize(shape);
   switch (kind) {
     case "cone":
-      return coneOutline(from, Math.atan2(to.y - from.y, to.x - from.x), size);
-    case "square":
-      return squareOutline(from, to, size);
+      return coneOutline(
+        from,
+        Math.atan2(to.y - from.y, to.x - from.x),
+        width * CELL_SIZE,
+      );
+    case "rectangle":
+      return rectangleOutline(from, rectangleCorner(from, to, width, height));
     case "circle":
-      return circleOutline(from, size);
+      return circleOutline(from, width * CELL_SIZE);
   }
 }
 
@@ -82,29 +94,34 @@ function coneOutline(origin: Vector2d, direction: number, length: number) {
   ];
 }
 
-function squareCorner(from: Vector2d, to: Vector2d, side: number) {
+function rectangleCorner(
+  from: Vector2d,
+  to: Vector2d,
+  width: number,
+  height: number,
+) {
   return {
-    x: from.x + (Math.sign(to.x - from.x) || 1) * side,
-    y: from.y + (Math.sign(to.y - from.y) || 1) * side,
+    x: from.x + (Math.sign(to.x - from.x) || 1) * width * CELL_SIZE,
+    y: from.y + (Math.sign(to.y - from.y) || 1) * height * CELL_SIZE,
   };
 }
 
-function squareOutline(from: Vector2d, to: Vector2d, side: number) {
-  const { x, y } = squareCorner(from, to, side);
+function rectangleOutline(from: Vector2d, { x, y }: Vector2d) {
   return [from.x, from.y, x, from.y, x, y, from.x, y];
 }
 
 // Moves `to` to where the shape really ends, so its size stays the same when computed again.
 export function fitShape(shape: AreaShape): AreaShape {
   const { kind, from, to } = shape;
-  const size = shapeCells(shape) * CELL_SIZE;
+  const { width, height } = shapeSize(shape);
+  const length = width * CELL_SIZE;
   const direction = Math.atan2(to.y - from.y, to.x - from.x);
   const end =
-    kind === "square"
-      ? squareCorner(from, to, size)
+    kind === "rectangle"
+      ? rectangleCorner(from, to, width, height)
       : {
-          x: from.x + Math.cos(direction) * size,
-          y: from.y + Math.sin(direction) * size,
+          x: from.x + Math.cos(direction) * length,
+          y: from.y + Math.sin(direction) * length,
         };
   return { kind, from: { x: from.x, y: from.y }, to: end };
 }

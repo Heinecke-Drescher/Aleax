@@ -2,12 +2,12 @@ import type { Vector2d } from "konva/lib/types";
 import { describe, expect, it } from "vitest";
 import { CELL_SIZE } from "./grid";
 import { toPoints } from "./points";
-import { fitShape, shapeCells, shapeOutline, type ShapeKind } from "./shapes";
+import { fitShape, shapeOutline, shapeSize, type ShapeKind } from "./shapes";
 
 const origin = { x: 100, y: 200 };
 
 function cells(kind: ShapeKind, to: Vector2d) {
-  return shapeCells({ kind, from: origin, to });
+  return shapeSize({ kind, from: origin, to });
 }
 
 function outline(kind: ShapeKind, from: Vector2d, to: Vector2d) {
@@ -22,21 +22,26 @@ function cone(to: { x: number; y: number }) {
   return { start, left, right };
 }
 
-describe("shapeCells", () => {
+describe("shapeSize", () => {
   it("rounds the distance to whole cells", () => {
-    expect(cells("circle", { x: 100 + 2.4 * CELL_SIZE, y: 200 })).toBe(2);
-    expect(cells("cone", { x: 100 + 2.6 * CELL_SIZE, y: 200 })).toBe(3);
+    expect(cells("circle", { x: 100 + 2.4 * CELL_SIZE, y: 200 }).width).toBe(2);
+    expect(cells("cone", { x: 100 + 2.6 * CELL_SIZE, y: 200 }).width).toBe(3);
   });
 
   it("measures circles and cones along the line to the pointer", () => {
     const to = { x: 100 + 3 * CELL_SIZE, y: 200 + 4 * CELL_SIZE };
-    expect(cells("circle", to)).toBe(5);
-    expect(cells("cone", to)).toBe(5);
+    expect(cells("circle", to)).toEqual({ width: 5, height: 5 });
+    expect(cells("cone", to)).toEqual({ width: 5, height: 5 });
   });
 
-  it("measures squares by the longer side", () => {
+  it("measures each side of a rectangle", () => {
     const to = { x: 100 + 3 * CELL_SIZE, y: 200 - 4 * CELL_SIZE };
-    expect(cells("square", to)).toBe(4);
+    expect(cells("rectangle", to)).toEqual({ width: 3, height: 4 });
+  });
+
+  it("keeps a rectangle dragged along a grid line one cell wide", () => {
+    const to = { x: 100 + 3 * CELL_SIZE, y: 200 + 0.4 * CELL_SIZE };
+    expect(cells("rectangle", to)).toEqual({ width: 3, height: 1 });
   });
 });
 
@@ -44,7 +49,7 @@ describe("shapeOutline", () => {
   it("has no shape below half a cell", () => {
     const to = { x: 100 + 0.4 * CELL_SIZE, y: 200 };
     expect(shapeOutline({ kind: "cone", from: origin, to })).toBeNull();
-    expect(shapeOutline({ kind: "square", from: origin, to })).toBeNull();
+    expect(shapeOutline({ kind: "rectangle", from: origin, to })).toBeNull();
     expect(shapeOutline({ kind: "circle", from: origin, to })).toBeNull();
   });
 
@@ -64,17 +69,18 @@ describe("shapeOutline", () => {
     expect((left.y + right.y) / 2).toBeCloseTo(200 + 2 * CELL_SIZE);
   });
 
-  it("grows a square from its corner towards the pointer", () => {
-    const side = 2 * CELL_SIZE;
-    expect(outline("square", origin, { x: 210, y: 290 })).toEqual([
+  it("grows a rectangle from its corner towards the pointer", () => {
+    const width = 2 * CELL_SIZE;
+    const height = 3 * CELL_SIZE;
+    expect(outline("rectangle", origin, { x: 210, y: 340 })).toEqual([
       origin,
-      { x: 100 + side, y: 200 },
-      { x: 100 + side, y: 200 + side },
-      { x: 100, y: 200 + side },
+      { x: 100 + width, y: 200 },
+      { x: 100 + width, y: 200 + height },
+      { x: 100, y: 200 + height },
     ]);
-    expect(outline("square", origin, { x: 10, y: 110 })[2]).toEqual({
-      x: 100 - side,
-      y: 200 - side,
+    expect(outline("rectangle", origin, { x: 10, y: 60 })[2]).toEqual({
+      x: 100 - width,
+      y: 200 - height,
     });
   });
 
@@ -89,10 +95,10 @@ describe("shapeOutline", () => {
 });
 
 describe("fitShape", () => {
-  it("puts the end of a square on its far corner", () => {
+  it("puts the end of a rectangle on its far corner", () => {
     const to = { x: 173.4, y: 320 };
-    expect(fitShape({ kind: "square", from: origin, to }).to).toEqual({
-      x: 200,
+    expect(fitShape({ kind: "rectangle", from: origin, to }).to).toEqual({
+      x: 150,
       y: 300,
     });
   });

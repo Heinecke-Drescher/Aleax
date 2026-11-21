@@ -28,16 +28,16 @@ const TEXT = {
   color: "#ff0000",
   fontSize: TEXT_FONT_SIZES.M,
 };
-const SQUARE: AreaShape = {
-  kind: "square",
+const RECTANGLE: AreaShape = {
+  kind: "rectangle",
   from: { x: 0, y: 0 },
   to: { x: 50, y: 50 },
 };
-const SQUARE_STROKE = {
+const RECTANGLE_STROKE = {
   color: "#0000ff",
   points: [0, 0, 50, 0, 50, 50, 0, 50],
   closed: true,
-  shape: SQUARE,
+  shape: RECTANGLE,
 };
 
 let room: Room;
@@ -51,7 +51,7 @@ function fillRoom(target: Room) {
   target.paintCell(1, 1, "#ff0000");
   target.addStroke("#000000", [0, 0, 10, 10]);
   target.addStroke("#00ff00", [5, 5, 20, 20], true);
-  target.addShape("#0000ff", SQUARE, false);
+  target.addShape("#0000ff", RECTANGLE, false);
   target.addToken("Goblin", IMAGE, { x: 3, y: 2 });
   const token = tokenOf(target, only(target.tokensMap.keys()));
   target.toggleEffect(token.id, "dead");
@@ -74,7 +74,7 @@ describe("map files", () => {
       strokes: expect.arrayContaining([
         { color: "#000000", points: [0, 0, 10, 10] },
         { color: "#00ff00", points: [5, 5, 20, 20], overFog: true },
-        SQUARE_STROKE,
+        RECTANGLE_STROKE,
       ]),
       tokens: [
         {
@@ -141,11 +141,11 @@ describe("map files", () => {
   });
 
   it("takes a shape's outline from its shape data", () => {
-    const stroke = { ...SQUARE_STROKE, points: [0, 0, 1, 1] };
+    const stroke = { ...RECTANGLE_STROKE, points: [0, 0, 1, 1] };
     const file = parseMapFile(
       JSON.stringify({ ...validFile(), strokes: [stroke] }),
     );
-    expect(file.strokes).toEqual([SQUARE_STROKE]);
+    expect(file.strokes).toEqual([RECTANGLE_STROKE]);
   });
 
   it("replaces what was on the map before", () => {
@@ -277,14 +277,18 @@ describe("map files", () => {
       "a shape of unknown kind",
       (file) => ({
         ...file,
-        strokes: [{ ...SQUARE_STROKE, shape: { ...SQUARE, kind: "hexagon" } }],
+        strokes: [
+          { ...RECTANGLE_STROKE, shape: { ...RECTANGLE, kind: "hexagon" } },
+        ],
       }),
     ],
     [
       "a shape without size",
       (file) => ({
         ...file,
-        strokes: [{ ...SQUARE_STROKE, shape: { ...SQUARE, to: SQUARE.from } }],
+        strokes: [
+          { ...RECTANGLE_STROKE, shape: { ...RECTANGLE, to: RECTANGLE.from } },
+        ],
       }),
     ],
     [
@@ -293,9 +297,9 @@ describe("map files", () => {
         ...file,
         strokes: [
           {
-            ...SQUARE_STROKE,
+            ...RECTANGLE_STROKE,
             shape: {
-              ...SQUARE,
+              ...RECTANGLE,
               from: { x: -1e308, y: 0 },
               to: { x: 1e308, y: 0 },
             },

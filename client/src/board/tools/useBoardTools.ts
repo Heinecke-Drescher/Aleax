@@ -24,7 +24,7 @@ export function useBoardTools(
   const { tool: text, ...texts } = useTextTool(room, color, textSize);
   const { tool: measure, measurement } = useMeasureTool(room);
   const cone = useShapeTool(room, "cone", color, onShapePlaced);
-  const square = useShapeTool(room, "square", color, onShapePlaced);
+  const rectangle = useShapeTool(room, "rectangle", color, onShapePlaced);
   const circle = useShapeTool(room, "circle", color, onShapePlaced);
   const reveal = useFogTool(room, "reveal");
   const hide = useFogTool(room, "hide");
@@ -37,7 +37,7 @@ export function useBoardTools(
     text,
     measure,
     cone: cone.tool,
-    square: square.tool,
+    rectangle: rectangle.tool,
     circle: circle.tool,
     resize: ownEventsTool,
     alignImage: ownEventsTool,
@@ -48,7 +48,7 @@ export function useBoardTools(
     activeTool: tools[tool],
     draftPoints,
     measurement,
-    shapeDraft: cone.draft ?? square.draft ?? circle.draft,
+    shapeDraft: cone.draft ?? rectangle.draft ?? circle.draft,
     fogFrame: reveal.frame ?? hide.frame,
     texts,
   };

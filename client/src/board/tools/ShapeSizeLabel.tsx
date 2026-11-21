@@ -1,5 +1,5 @@
 import { FEET_PER_CELL } from "../../room/grid";
-import { shapeCells, type AreaShape } from "../../room/shapes";
+import { shapeSize, type AreaShape } from "../../room/shapes";
 import { MapLabel } from "../MapLabel";
 
 interface ShapeSizeLabelProps {
@@ -9,8 +9,6 @@ interface ShapeSizeLabelProps {
 }
 
 export function ShapeSizeLabel({ shape, zoom, color }: ShapeSizeLabelProps) {
-  const feet = shapeCells(shape) * FEET_PER_CELL;
-
   return (
     <MapLabel
       at={shape.from}
@@ -18,7 +16,20 @@ export function ShapeSizeLabel({ shape, zoom, color }: ShapeSizeLabelProps) {
       gap={0}
       zoom={zoom}
       color={color}
-      text={shape.kind === "circle" ? `${feet} ft radius` : `${feet} ft`}
+      text={sizeText(shape)}
     />
   );
+}
+
+function sizeText(shape: AreaShape) {
+  const { width, height } = shapeSize(shape);
+  const feet = (cells: number) => cells * FEET_PER_CELL;
+  switch (shape.kind) {
+    case "rectangle":
+      return `${feet(width)} × ${feet(height)} ft`;
+    case "circle":
+      return `${feet(width)} ft radius`;
+    case "cone":
+      return `${feet(width)} ft`;
+  }
 }

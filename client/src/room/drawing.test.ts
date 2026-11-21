@@ -13,12 +13,12 @@ import type { AreaShape } from "./shapes";
 import { validValues } from "./roomStore";
 import { IMAGE, only, strokeOf } from "./testRoom";
 
-const SQUARE: AreaShape = {
-  kind: "square",
+const RECTANGLE: AreaShape = {
+  kind: "rectangle",
   from: { x: 0, y: 0 },
   to: { x: 100, y: 100 },
 };
-const SQUARE_OUTLINE = [0, 0, 100, 0, 100, 100, 0, 100];
+const RECTANGLE_OUTLINE = [0, 0, 100, 0, 100, 100, 0, 100];
 
 let room: Room;
 
@@ -46,30 +46,33 @@ describe("drawing", () => {
   });
 
   it("adds shapes as closed strokes that remember their shape in one undo step", () => {
-    const id = room.addShape("#000000", SQUARE, false);
+    const id = room.addShape("#000000", RECTANGLE, false);
     const shape = strokeOf(room, id);
-    expect(shape).toMatchObject({ points: SQUARE_OUTLINE, shape: SQUARE });
+    expect(shape).toMatchObject({
+      points: RECTANGLE_OUTLINE,
+      shape: RECTANGLE,
+    });
     expect(isClosed(shape)).toBe(true);
     room.undoManager.undo();
     expect(room.strokesMap.size).toBe(0);
   });
 
   it("reshapes a shape in one undo step", () => {
-    const id = room.addShape("#000000", SQUARE, false);
+    const id = room.addShape("#000000", RECTANGLE, false);
     const before = room.doc.toJSON();
     room.reshapeStroke(id, { x: 50, y: 50 });
     expect(strokeOf(room, id)).toMatchObject({
       points: [0, 0, 50, 0, 50, 50, 0, 50],
-      shape: { kind: "square", from: { x: 0, y: 0 }, to: { x: 50, y: 50 } },
+      shape: { kind: "rectangle", from: { x: 0, y: 0 }, to: { x: 50, y: 50 } },
     });
     room.undoManager.undo();
     expect(room.doc.toJSON()).toEqual(before);
   });
 
   it("adds no undo step when a reshape keeps the size", () => {
-    const id = room.addShape("#000000", SQUARE, false);
+    const id = room.addShape("#000000", RECTANGLE, false);
     room.reshapeStroke(id, { x: 110, y: 90 });
-    expect(strokeOf(room, id).shape).toEqual(SQUARE);
+    expect(strokeOf(room, id).shape).toEqual(RECTANGLE);
     room.undoManager.undo();
     expect(room.strokesMap.size).toBe(0);
   });
@@ -78,8 +81,8 @@ describe("drawing", () => {
     room.addStroke("#000000", [0, 0, 10, 10]);
     const lineId = only(room.strokesMap.keys());
     expect(() => room.reshapeStroke(lineId, { x: 50, y: 50 })).toThrow();
-    const id = room.addShape("#000000", SQUARE, false);
-    expect(() => room.reshapeStroke(id, SQUARE.from)).toThrow();
+    const id = room.addShape("#000000", RECTANGLE, false);
+    expect(() => room.reshapeStroke(id, RECTANGLE.from)).toThrow();
   });
 
   it("tells shapes apart from lines", () => {
@@ -135,21 +138,24 @@ describe("strokes from other players", () => {
     ["a point that is no number", { ...LINE, points: [0, 0, 10, NaN] }],
     ["above the fog by something other than true", { ...LINE, overFog: 1 }],
     ["closed by something other than true", { ...LINE, closed: "yes" }],
-    ["a shape of unknown kind", { ...LINE, shape: { ...SQUARE, kind: "x" } }],
+    [
+      "a shape of unknown kind",
+      { ...LINE, shape: { ...RECTANGLE, kind: "x" } },
+    ],
     [
       "a shape without size",
-      { ...LINE, shape: { ...SQUARE, to: SQUARE.from } },
+      { ...LINE, shape: { ...RECTANGLE, to: RECTANGLE.from } },
     ],
-    ["a shape without an end", { ...LINE, shape: { ...SQUARE, to: 3 } }],
+    ["a shape without an end", { ...LINE, shape: { ...RECTANGLE, to: 3 } }],
   ])("rejects %s", (_, value) => {
     expect(validStroke("s", value)).toBeNull();
   });
 
   it("draws a shape's outline from its shape", () => {
-    const shape = { ...LINE, closed: true, shape: SQUARE };
+    const shape = { ...LINE, closed: true, shape: RECTANGLE };
     expect(validStroke("s", shape)).toMatchObject({
-      points: SQUARE_OUTLINE,
-      shape: SQUARE,
+      points: RECTANGLE_OUTLINE,
+      shape: RECTANGLE,
     });
   });
 

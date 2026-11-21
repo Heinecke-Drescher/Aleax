@@ -22,9 +22,9 @@ import {
   IconEyeOff,
   IconPencil,
   IconPointer,
+  IconRectangle,
   IconResize,
   IconRuler,
-  IconSquare,
   type Icon,
 } from "@tabler/icons-react";
 import {
@@ -75,7 +75,7 @@ const DRAWING_TOOLS: ToolButton[] = [
 
 const SHAPE_TOOLS: ToolButton[] = [
   { tool: "cone", label: "Cone area", icon: IconCone },
-  { tool: "square", label: "Square area", icon: IconSquare },
+  { tool: "rectangle", label: "Rectangle area", icon: IconRectangle },
   { tool: "circle", label: "Circle area", icon: IconCircle },
 ];
 

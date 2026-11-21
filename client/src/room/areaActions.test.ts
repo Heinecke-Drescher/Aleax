@@ -20,8 +20,8 @@ const TRAP: MapTextData = {
   fontSize: TEXT_FONT_SIZES.M,
 };
 
-const SQUARE: AreaShape = {
-  kind: "square",
+const RECTANGLE: AreaShape = {
+  kind: "rectangle",
   from: { x: 0, y: 0 },
   to: { x: 100, y: 100 },
 };
@@ -217,12 +217,12 @@ describe("moveItems", () => {
   });
 
   it("moves a shape together with its outline", () => {
-    const id = room.addShape("#000000", SQUARE, false);
+    const id = room.addShape("#000000", RECTANGLE, false);
     room.moveItems(strokes([id]), 50, 100);
     expect(strokeOf(room, id)).toMatchObject({
       points: [50, 100, 150, 100, 150, 200, 50, 200],
       shape: {
-        kind: "square",
+        kind: "rectangle",
         from: { x: 50, y: 100 },
         to: { x: 150, y: 200 },
       },
@@ -274,20 +274,20 @@ describe("copy, paste and delete", () => {
   });
 
   it("pastes shapes as shapes", () => {
-    const id = room.addShape("#000000", SQUARE, false);
+    const id = room.addShape("#000000", RECTANGLE, false);
     const clip = room.copyItems(oneItem("strokes", id));
     const [copyId] = room.paste(clip, 10, 0).strokes;
     const copy = strokeOf(room, copyId);
     expect(isClosed(copy)).toBe(true);
     expect(copy.shape).toEqual({
-      kind: "square",
+      kind: "rectangle",
       from: { x: 10, y: 0 },
       to: { x: 110, y: 100 },
     });
   });
 
   it("selects a shape by its closing edge", () => {
-    room.addShape("#000000", SQUARE, false);
+    room.addShape("#000000", RECTANGLE, false);
     const closingEdge = { x: -10, y: 40, width: 20, height: 20 };
     expect(room.copyArea(closingEdge).strokes).toHaveLength(1);
   });
