@@ -1,6 +1,7 @@
 import { useMantineTheme } from "@mantine/core";
 import { Group } from "react-konva";
 import { highlightColor, OUTLINE_OUTSIDE } from "../selection/highlight";
+import { labelPlace } from "../labelPlace";
 import { MapLabel } from "../MapLabel";
 import { useStageZoom } from "../useStageZoom";
 
@@ -21,9 +22,7 @@ export function TokenNameLabel({ name, size }: TokenNameLabelProps) {
   return (
     <Group ref={groupRef} listening={false}>
       <MapLabel
-        at={bottom}
-        awayFrom={{ x: size / 2, y: size / 2 }}
-        gap={GAP / zoom}
+        place={labelPlace(bottom, { x: size / 2, y: size / 2 }, GAP / zoom)}
         zoom={zoom}
         color={highlightColor(theme)}
         text={name}

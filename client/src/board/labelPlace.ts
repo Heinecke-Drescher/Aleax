@@ -20,3 +20,18 @@ export function labelPlace(at: Vector2d, awayFrom: Vector2d, gap: number) {
     y: at.y + side * gap,
   } as const;
 }
+
+export type LabelPlace = ReturnType<typeof labelPlace>;
+
+// For the end a pointer drags: a finger rests below it, so the label goes beside it instead.
+export function labelPlaceClearOfFinger(
+  at: Vector2d,
+  awayFrom: Vector2d,
+  gap: number,
+): LabelPlace {
+  const place = labelPlace(at, awayFrom, gap);
+  if (place.pointer !== "up") return place;
+  return awayFrom.x > at.x
+    ? { pointer: "right", x: at.x - gap, y: at.y }
+    : { pointer: "left", x: at.x + gap, y: at.y };
+}

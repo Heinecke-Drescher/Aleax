@@ -1,6 +1,7 @@
 import { Group, Line } from "react-konva";
 import { CELL_SIZE, FEET_PER_CELL, squareCenter } from "../../room/grid";
 import { cellDistance, type Measurement } from "./measurement";
+import { labelPlaceClearOfFinger } from "../labelPlace";
 import { MapLabel } from "../MapLabel";
 import { useStageZoom } from "../useStageZoom";
 
@@ -45,10 +46,8 @@ export function DistanceMeasure({ measurement, color }: DistanceMeasureProps) {
         </Group>
       ))}
       <MapLabel
-        at={from}
-        awayFrom={to}
-        // Clear of the start cell, which often holds the measuring token.
-        gap={CELL_SIZE / 2}
+        // Beyond the end cell, which often holds the token measured to.
+        place={labelPlaceClearOfFinger(to, from, CELL_SIZE / 2)}
         zoom={zoom}
         color={color}
         text={`${cells * FEET_PER_CELL} ft · ${cells} ${cells === 1 ? "cell" : "cells"}`}

@@ -1,5 +1,6 @@
 import { FEET_PER_CELL } from "../../room/grid";
 import { shapeSize, type AreaShape } from "../../room/shapes";
+import { labelPlace } from "../labelPlace";
 import { MapLabel } from "../MapLabel";
 
 interface ShapeSizeLabelProps {
@@ -11,9 +12,7 @@ interface ShapeSizeLabelProps {
 export function ShapeSizeLabel({ shape, zoom, color }: ShapeSizeLabelProps) {
   return (
     <MapLabel
-      at={shape.from}
-      awayFrom={shape.to}
-      gap={0}
+      place={labelPlace(shape.from, shape.to, 0)}
       zoom={zoom}
       color={color}
       text={sizeText(shape)}
