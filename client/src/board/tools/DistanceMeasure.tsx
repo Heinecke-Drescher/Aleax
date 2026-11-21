@@ -15,8 +15,9 @@ export function DistanceMeasure({ measurement, color }: DistanceMeasureProps) {
 
   if (!measurement) return <Group ref={groupRef} listening={false} />;
 
-  const from = squareCenter(measurement.from.x, measurement.from.y, 1);
-  const to = squareCenter(measurement.to.x, measurement.to.y, 1);
+  const { size } = measurement;
+  const from = squareCenter(measurement.from.x, measurement.from.y, size);
+  const to = squareCenter(measurement.to.x, measurement.to.y, size);
   const cells = cellDistance(measurement);
   const rotation = (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
 
@@ -46,8 +47,8 @@ export function DistanceMeasure({ measurement, color }: DistanceMeasureProps) {
         </Group>
       ))}
       <MapLabel
-        // Beyond the end cell, which often holds the token measured to.
-        place={labelPlaceClearOfFinger(to, from, CELL_SIZE / 2)}
+        // Beyond the end square, which often holds the token measured to.
+        place={labelPlaceClearOfFinger(to, from, (size * CELL_SIZE) / 2)}
         zoom={zoom}
         color={color}
         text={`${cells * FEET_PER_CELL} ft · ${cells} ${cells === 1 ? "cell" : "cells"}`}

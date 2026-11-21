@@ -16,7 +16,7 @@ export function useMeasureTool(room: Room) {
       const cell = cellAt(point);
       if (!containsCell(room.mapBounds(), cell.x, cell.y)) return;
       press.current = point;
-      setMeasurement({ from: cell, to: cell });
+      setMeasurement({ from: cell, to: cell, size: 1 });
     },
     onMove(pointer) {
       const to = clampCellToMap(

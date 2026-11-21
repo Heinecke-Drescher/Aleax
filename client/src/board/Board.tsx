@@ -461,7 +461,7 @@ export function Board({
             />
           )}
           <DistanceMeasure
-            measurement={measurement}
+            measurement={measurement ?? itemDrag.measurement}
             color={theme.colors[player.color][6]}
           />
           {heldClip && <HeldTokensPreview clip={heldClip} ref={heldPreview} />}

@@ -45,7 +45,7 @@ export function copyShape(shape: AreaShape) {
 const CONE_HALF_ANGLE = Math.atan(1 / 2);
 const CIRCLE_CORNERS = 64;
 
-// In cells: a rectangle's sides, a cone's length or a circle's radius (as both).
+// In cells; a cone or circle has one length, given as both.
 export function shapeSize({ kind, from, to }: AreaShape) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
@@ -56,7 +56,7 @@ export function shapeSize({ kind, from, to }: AreaShape) {
   const width = toCells(Math.abs(dx));
   const height = toCells(Math.abs(dy));
   if (width === 0 && height === 0) return { width, height };
-  // Dragged along a grid line, a rectangle is still one cell wide.
+  // So a 5 ft line along a grid line needs no aiming.
   return { width: Math.max(width, 1), height: Math.max(height, 1) };
 }
 

@@ -1,7 +1,7 @@
 import { useReducedMotion } from "@mantine/hooks";
 import type { KonvaEventObject, Node } from "konva/lib/Node";
 import type { IRect, Vector2d } from "konva/lib/types";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useFogGuard } from "../../fog/useFogGuard";
 import { existing, oneItem, type Items } from "../../room/areaActions";
 import type { Room } from "../../room/createRoom";
@@ -11,10 +11,11 @@ import {
   shiftPoints,
   validStroke,
 } from "../../room/drawing";
-import { CELL_SIZE } from "../../room/grid";
+import { CELL_SIZE, type Square } from "../../room/grid";
 import { validMapText } from "../../room/texts";
 import { validToken } from "../../room/tokens";
 import { liftTokens } from "../tokens/liftTokens";
+import type { Measurement } from "../tools/measurement";
 import { cellOffset, roundToCells, squaresBounds } from "./selection";
 
 interface Drag {
@@ -25,10 +26,12 @@ interface Drag {
   roundsToCells: boolean;
   others: { node: Node; start: Vector2d }[];
   lift: ReturnType<typeof liftTokens>;
+  grabbedToken: Square | null;
 }
 
 export function useItemDrag(room: Room, selected: Items) {
   const drag = useRef<Drag | null>(null);
+  const [measurement, setMeasurement] = useState<Measurement | null>(null);
   const fogGuard = useFogGuard();
   const reducesMotion = useReducedMotion(undefined, {
     getInitialValueInEffect: false,
@@ -65,6 +68,7 @@ export function useItemDrag(room: Room, selected: Items) {
       ),
       others: others.map((other) => ({ node: other, start: other.position() })),
       lift: liftTokens([node, ...others], reducesMotion),
+      grabbedToken: tokens.find((token) => token.id === id) ?? null,
     };
   }
 
@@ -105,6 +109,28 @@ export function useItemDrag(room: Room, selected: Items) {
     if (!drag.current) return;
     const { dx, dy } = offset(event);
     placeAll(event, dx, dy);
+    measure(dx, dy);
+  }
+
+  function measure(dx: number, dy: number) {
+    const { grabbedToken } = current();
+    if (!grabbedToken || (dx === 0 && dy === 0)) {
+      setMeasurement(null);
+      return;
+    }
+    const to = {
+      x: grabbedToken.x + dx / CELL_SIZE,
+      y: grabbedToken.y + dy / CELL_SIZE,
+    };
+    setMeasurement((shown) =>
+      shown && shown.to.x === to.x && shown.to.y === to.y
+        ? shown
+        : {
+            from: { x: grabbedToken.x, y: grabbedToken.y },
+            to,
+            size: grabbedToken.size,
+          },
+    );
   }
 
   function end(event: KonvaEventObject<DragEvent>) {
@@ -115,6 +141,7 @@ export function useItemDrag(room: Room, selected: Items) {
     placeAll(event, 0, 0);
     lift.drop();
     drag.current = null;
+    setMeasurement(null);
     if (reachesFog(items, dx, dy)) return;
     room.moveItems(items, dx, dy);
   }
@@ -146,5 +173,5 @@ export function useItemDrag(room: Room, selected: Items) {
     );
   }
 
-  return { start, move, end };
+  return { start, move, end, measurement };
 }
