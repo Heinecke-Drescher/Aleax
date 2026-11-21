@@ -24,6 +24,4 @@ export interface Critical {
   id: string;
   kind: CriticalKind;
   color: ReturnType<typeof rollColor>;
-  // A thrown die is on the map; secret rolls are not.
-  thrown: boolean;
 }

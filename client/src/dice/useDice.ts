@@ -4,7 +4,6 @@ import { rollDie, type DieSides } from "../room/dice";
 import { useSharedRoom } from "../room/RoomContext";
 import { useRolls } from "../room/useRolls";
 import { rollSecretly, type SecretRoll } from "./secretRoll";
-import { useShowCritical } from "./useCriticalRolls";
 
 const MAX_SECRET_ROLLS = 20;
 
@@ -15,7 +14,6 @@ export function useDiceState() {
   const rolls = [...useRolls()].reverse();
   const [isSecret, setSecret] = useState(false);
   const [secretRolls, setSecretRolls] = useState<SecretRoll[]>([]);
-  const showCritical = useShowCritical();
 
   function roll(sides: DieSides) {
     // Secret rolls stay in this browser and never reach the room document.
@@ -24,7 +22,6 @@ export function useDiceState() {
       setSecretRolls((previous) =>
         [secretRoll, ...previous].slice(0, MAX_SECRET_ROLLS),
       );
-      showCritical({ ...secretRoll, color: player.color, thrown: false });
       return;
     }
     room.addRoll(player.name, player.color, sides, rollDie(sides));

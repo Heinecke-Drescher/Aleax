@@ -46,7 +46,7 @@ export function CriticalScene({
   const groupRef = useRef<GroupNode>(null);
   const animation = useRef<CriticalAnimation | null>(null);
   const [area, setArea] = useState<IRect | null>(null);
-  const { id, thrown } = critical;
+  const { id } = critical;
   const startScene = useEffectEvent(start);
 
   useHotkeys([["Escape", () => area && onDone(id)]]);
@@ -54,11 +54,11 @@ export function CriticalScene({
   useEffect(() => {
     const timer = setTimeout(
       () => setArea(mapRect(room.mapBounds())),
-      // A thrown die lands first.
-      thrown ? ROLL_SECONDS * 1000 : 0,
+      // The die lands first.
+      ROLL_SECONDS * 1000,
     );
     return () => clearTimeout(timer);
-  }, [thrown, room]);
+  }, [room]);
 
   useEffect(() => {
     if (!area) return;
@@ -66,9 +66,9 @@ export function CriticalScene({
     const layer = group?.getLayer();
     if (!group || !layer) throw new Error("Critical scene is not mounted");
     const center = { x: area.x + area.width / 2, y: area.y + area.height / 2 };
-    // Secret rolls are not on the map, and a thrown die can be gone, e.g. after the map
-    // was reset or the roll was pushed out of the history; those start in the middle.
-    const landed = (thrown && landings.get(id)) || center;
+    // The die can be gone, e.g. after the map was reset or the roll was pushed out of the
+    // history; then the scene starts in the middle.
+    const landed = landings.get(id) ?? center;
     const scene = startScene(area, landed);
     animation.current = scene;
 
@@ -87,7 +87,7 @@ export function CriticalScene({
     return () => {
       frames.stop();
     };
-  }, [area, id, thrown, landings, onDone, fadeStart]);
+  }, [area, id, landings, onDone, fadeStart]);
 
   function drawScene(context: Context) {
     animation.current?.draw(context._context);
