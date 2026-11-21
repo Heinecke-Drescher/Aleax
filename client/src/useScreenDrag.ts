@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from "react";
+import { FINGER_OFFSET, isFinger } from "./finger";
 import { PRIMARY_BUTTON } from "./pointerButtons";
 import { isBeyondTap } from "./tap";
 
@@ -20,8 +21,10 @@ interface Press {
   isDragging: boolean;
 }
 
+// Above a finger, so the ghost and where it lands or flies from are not under the finger.
 function sampleOf(event: PointerEvent) {
-  return { x: event.clientX, y: event.clientY, time: event.timeStamp };
+  const lift = isFinger(event.nativeEvent) ? FINGER_OFFSET : 0;
+  return { x: event.clientX, y: event.clientY - lift, time: event.timeStamp };
 }
 
 // In CSS pixels like the pointer, not in Mantine's rem.

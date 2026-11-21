@@ -15,7 +15,8 @@ import { CELL_SIZE, type Square } from "../../room/grid";
 import { validMapText } from "../../room/texts";
 import { validToken } from "../../room/tokens";
 import { liftTokens } from "../tokens/liftTokens";
-import { endAboveFinger, isFinger } from "../tools/fingerOffset";
+import { isFinger } from "../../finger";
+import { endAboveFinger } from "../tools/fingerOffset";
 import type { Measurement } from "../tools/measurement";
 import { cellOffset, roundToCells, squaresBounds } from "./selection";
 
