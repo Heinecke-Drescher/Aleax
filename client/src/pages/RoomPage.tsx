@@ -184,7 +184,7 @@ function RoomView({ roomId }: { roomId: string }) {
   const isPreparing = preparation.preparation !== null;
   useCloseWatcher(isSheetOpen, closeTokens);
   useCloseWatcher(isPhone && isDetailOpen, tokenDetail.hide);
-  useCloseWatcher(header.isCollapsed, () => header.setCollapsed(false));
+  useCloseWatcher(header.isCollapsed, header.show);
   useCloseWatcher(isPhone && isPreparing, () => changeMap(preparation.leave));
   const isPlainView =
     !isSheetOpen && !isDetailOpen && !header.isCollapsed && !isPreparing;
@@ -273,9 +273,7 @@ function RoomView({ roomId }: { roomId: string }) {
                       </Badge>
                     )}
                     {header.canCollapse && (
-                      <HideHeaderButton
-                        onHide={() => header.setCollapsed(true)}
-                      />
+                      <HideHeaderButton onHide={header.hide} />
                     )}
                   </Group>
                 </AppShell.Header>
@@ -289,7 +287,7 @@ function RoomView({ roomId }: { roomId: string }) {
                       <ErrorBoundary
                         FallbackComponent={MapError}
                         // The broken map takes the toolbar and its button for the header with it.
-                        onError={() => header.setCollapsed(false)}
+                        onError={header.show}
                       >
                         <Board
                           key={mapRoom.doc.guid}
@@ -299,7 +297,8 @@ function RoomView({ roomId }: { roomId: string }) {
                             header.isCollapsed && (
                               <ShowHeaderButton
                                 isDisconnected={connection === "disconnected"}
-                                onShow={() => header.setCollapsed(false)}
+                                isFlashing={header.isJustHidden}
+                                onShow={header.show}
                               />
                             )
                           }

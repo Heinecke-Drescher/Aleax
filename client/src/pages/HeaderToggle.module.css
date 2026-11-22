@@ -1,0 +1,24 @@
+/* The button jumps from the header's corner into the toolbar, so it pulses twice to be found,
+   slowly enough for WCAG 2.3.1. Its duration is SHOW_BUTTON_FLASH_MS. */
+@media (prefers-reduced-motion: no-preference) {
+  .flash {
+    animation: flash ease-in-out;
+  }
+}
+
+@keyframes flash {
+  22.6%,
+  35.5%,
+  74.2%,
+  87.1% {
+    background-color: var(--mantine-color-blue-filled);
+    color: var(--mantine-color-white);
+  }
+  0%,
+  9.7%,
+  48.4%,
+  61.3% {
+    background-color: var(--ai-bg);
+    color: var(--ai-color);
+  }
+}
