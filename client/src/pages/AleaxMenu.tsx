@@ -19,7 +19,6 @@ import {
   IconMusic,
   IconShare,
 } from "@tabler/icons-react";
-import { useState } from "react";
 import { Link } from "react-router";
 import { MusicPopover } from "../music/MusicPopover";
 import { usePlayer } from "../player/PlayerContext";
@@ -36,6 +35,8 @@ interface AleaxMenuProps {
   connection: ConnectionState;
   awareness: Awareness | null;
   isSynced: boolean;
+  isMusicOpen: boolean;
+  onMusicOpenChange: (isOpen: boolean) => void;
   onEditName: () => void;
 }
 
@@ -43,6 +44,8 @@ export function AleaxMenu({
   connection,
   awareness,
   isSynced,
+  isMusicOpen,
+  onMusicOpenChange,
   onEditName,
 }: AleaxMenuProps) {
   const dmControl = useDmControl(awareness);
@@ -50,13 +53,12 @@ export function AleaxMenu({
   const isDisconnected = connection === "disconnected";
   const { setColorScheme } = useMantineColorScheme();
   const isDark = useComputedColorScheme("light") === "dark";
-  const [isMusicOpen, setMusicOpen] = useState(false);
   const fullscreen = useFullscreenDocument();
   // On a phone the system's share sheet reaches the group's chat directly.
   const isSharing = !useWideLayout() && canShareRoomLink();
 
   return (
-    <MusicPopover opened={isMusicOpen} onChange={setMusicOpen}>
+    <MusicPopover opened={isMusicOpen} onChange={onMusicOpenChange}>
       {/* A heading may hold a button, but not the other way round. */}
       <Title order={3}>
         <Menu position="bottom-start" shadow="md">
@@ -98,7 +100,7 @@ export function AleaxMenu({
             <Menu.Divider />
             <Menu.Item
               leftSection={<IconMusic size={16} />}
-              onClick={() => setMusicOpen(true)}
+              onClick={() => onMusicOpenChange(true)}
             >
               Music
             </Menu.Item>

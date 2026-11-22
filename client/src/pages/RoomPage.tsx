@@ -56,6 +56,7 @@ import { DETAIL_WIDTH, TokenDetail } from "../tokens/TokenDetail";
 import { TokenDetailContext } from "../tokens/tokenDetailControl";
 import { TokenPanel } from "../tokens/TokenPanel";
 import { undoStep } from "../undo/useUndo";
+import { useMusicNotice } from "../music/useMusicNotice";
 import { AleaxMenu } from "./AleaxMenu";
 import { HideHeaderButton, ShowHeaderButton } from "./HeaderToggle";
 import { useHeaderCollapsed } from "./useHeaderCollapsed";
@@ -154,6 +155,12 @@ function RoomView({ roomId }: { roomId: string }) {
     fittedAxisShift(covered),
   );
   const header = useHeaderCollapsed();
+  const [isMusicOpen, setMusicOpen] = useState(false);
+  // The notice lives longer than this render, so the header may have collapsed since.
+  useMusicNotice(room, isSynced, () => {
+    header.show();
+    setMusicOpen(true);
+  });
   const [detailTokenId, setDetailTokenId] = useState<string | null>(null);
   const tokenDetail = useMemo(() => {
     const intent = createHoverIntent(
@@ -245,6 +252,8 @@ function RoomView({ roomId }: { roomId: string }) {
                       connection={connection}
                       awareness={awareness}
                       isSynced={isSynced}
+                      isMusicOpen={isMusicOpen}
+                      onMusicOpenChange={setMusicOpen}
                       onEditName={editName}
                     />
                     {/* Before the sync, an export would hold an empty map and an import would mix with the loaded one. */}
