@@ -1,0 +1,12 @@
+/* Hands press and drag here, so a long press neither opens iOS's image menu nor selects text. */
+.playArea {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Older Safari cannot type into fields inside an unselectable area. */
+.playArea :is(input, textarea) {
+  -webkit-user-select: text;
+  user-select: text;
+}

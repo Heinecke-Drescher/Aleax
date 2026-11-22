@@ -74,6 +74,7 @@ import {
 } from "./panelColumn";
 import { NameHint } from "./NameHint";
 import { PlayerNameModal } from "./PlayerNameModal";
+import classes from "./RoomPage.module.css";
 
 export function RoomPage() {
   const { roomId } = useParams();
@@ -277,7 +278,7 @@ function RoomView({ roomId }: { roomId: string }) {
                     )}
                   </Group>
                 </AppShell.Header>
-                <AppShell.Main>
+                <AppShell.Main className={classes.playArea}>
                   <Stack
                     gap={0}
                     // The offset, unlike the header's height, drops to 0 while the header is hidden.
