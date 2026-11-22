@@ -3,7 +3,7 @@ import type { Group } from "konva/lib/Group";
 import type { Node } from "konva/lib/Node";
 import { TOKEN_BODY_NAME, TOKEN_NAME } from "./tokenNodes";
 
-const LIFTED = 1.1;
+export const LIFTED = 1.1;
 const LIFT_SECONDS = 0.15;
 
 export function liftTokens(moved: Node[], reducesMotion: boolean) {

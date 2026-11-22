@@ -15,8 +15,9 @@ import { CELL_SIZE, type Square } from "../../room/grid";
 import { validMapText } from "../../room/texts";
 import { validToken } from "../../room/tokens";
 import { liftTokens } from "../tokens/liftTokens";
-import { isFinger } from "../../finger";
-import { endAboveFinger } from "../tools/fingerOffset";
+import { FINGER_OFFSET, isFinger } from "../../finger";
+import { screenPointOnMap } from "../dropPoint";
+import { endAboveFinger, tokenLift } from "../tools/fingerOffset";
 import type { Measurement } from "../tools/measurement";
 import { cellOffset, roundToCells, squaresBounds } from "./selection";
 
@@ -31,6 +32,7 @@ interface Drag {
   grabbedToken: Square | null;
   // Read at the start, as a drag stopped by a second finger ends without an event.
   byFinger: boolean;
+  fingerLift: number;
 }
 
 export function useItemDrag(room: Room, selected: Items) {
@@ -63,6 +65,8 @@ export function useItemDrag(room: Room, selected: Items) {
       (other: Node) =>
         other !== node && (ids.has(other.id()) || ids.has(other.name())),
     );
+    const grabbedToken = tokens.find((token) => token.id === id) ?? null;
+    const byFinger = isFinger(event.evt);
     drag.current = {
       items,
       start: node.position(),
@@ -72,8 +76,20 @@ export function useItemDrag(room: Room, selected: Items) {
       ),
       others: others.map((other) => ({ node: other, start: other.position() })),
       lift: liftTokens([node, ...others], reducesMotion),
-      grabbedToken: tokens.find((token) => token.id === id) ?? null,
-      byFinger: isFinger(event.evt),
+      grabbedToken,
+      byFinger,
+      // Konva hands the press that started the drag, where the finger holds the item.
+      fingerLift:
+        byFinger && grabbedToken
+          ? tokenLift(
+              grabbedToken,
+              screenPointOnMap(stage, {
+                x: event.evt.clientX,
+                y: event.evt.clientY,
+              }).y,
+              stage.scaleY(),
+            )
+          : FINGER_OFFSET,
     };
   }
 
@@ -83,13 +99,14 @@ export function useItemDrag(room: Room, selected: Items) {
   }
 
   function offset(event: KonvaEventObject<DragEvent>) {
-    const { start, gridBounds, roundsToCells, byFinger } = current();
+    const { start, gridBounds, roundsToCells, byFinger, fingerLift } =
+      current();
     const node = event.target;
     const stage = node.getStage();
     if (!stage) throw new Error("Dragged item is not on a stage");
     // Above the finger, so the finger hides neither the items nor the ruler.
     const shown = byFinger
-      ? endAboveFinger(node.position(), start, stage.scaleY())
+      ? endAboveFinger(node.position(), start, stage.scaleY(), fingerLift)
       : node.position();
     const dx = shown.x - start.x;
     const dy = shown.y - start.y;
