@@ -133,5 +133,7 @@ Delete `/tmp/aleax-load` afterwards.
 
 ## Credits
 
-Dice sounds: [Casino Audio](https://kenney.nl/assets/casino-audio) by Kenney
-(CC0).
+Sounds by Kenney (CC0):
+[Casino Audio](https://kenney.nl/assets/casino-audio),
+[Interface Sounds](https://kenney.nl/assets/interface-sounds) and
+[Music Jingles](https://kenney.nl/assets/music-jingles).

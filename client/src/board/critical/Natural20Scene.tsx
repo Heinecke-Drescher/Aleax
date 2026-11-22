@@ -130,5 +130,12 @@ export function Natural20Scene(props: CriticalSceneProps) {
     }
   }
 
-  return <CriticalScene {...props} fadeStart={FADE_START} start={start} />;
+  return (
+    <CriticalScene
+      {...props}
+      fadeStart={FADE_START}
+      sloganAt={BURST_SECONDS + GATHER_SECONDS}
+      start={start}
+    />
+  );
 }

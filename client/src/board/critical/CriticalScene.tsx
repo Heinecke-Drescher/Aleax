@@ -10,6 +10,7 @@ import { ROLL_SECONDS } from "../dice/throwPath";
 import { mapRect } from "../../room/grid";
 import { useRoom } from "../../room/RoomContext";
 import { PRIMARY_BUTTON } from "../../pointerButtons";
+import { usePlaySound } from "../../useSounds";
 
 const FADE_SECONDS = 0.5;
 const DARKENING = 0.4;
@@ -31,6 +32,8 @@ export interface CriticalSceneProps {
 interface Props extends CriticalSceneProps {
   // Seconds after the start at which the scene fades out.
   fadeStart: number;
+  // Seconds after the start at which the slogan appears; its jingle plays with it.
+  sloganAt: number;
   // Called once the map is darkened; the area is the whole map at that moment.
   start: (area: IRect, landed: Vector2d) => CriticalAnimation;
 }
@@ -40,6 +43,7 @@ export function CriticalScene({
   landings,
   onDone,
   fadeStart,
+  sloganAt,
   start,
 }: Props) {
   const room = useRoom();
@@ -48,6 +52,8 @@ export function CriticalScene({
   const [area, setArea] = useState<IRect | null>(null);
   const { id } = critical;
   const startScene = useEffectEvent(start);
+  const playSound = usePlaySound();
+  const playJingle = useEffectEvent(() => playSound(critical.kind));
 
   useHotkeys([["Escape", () => area && onDone(id)]]);
 
@@ -71,9 +77,14 @@ export function CriticalScene({
     const landed = landings.get(id) ?? center;
     const scene = startScene(area, landed);
     animation.current = scene;
+    let hasPlayedJingle = false;
 
     const frames = new Animation((frame) => {
       const seconds = frame.time / 1000;
+      if (!hasPlayedJingle && seconds >= sloganAt) {
+        hasPlayedJingle = true;
+        playJingle();
+      }
       const opacity = Math.max(1 - (seconds - fadeStart) / FADE_SECONDS, 0);
       if (opacity === 0) {
         frames.stop();
@@ -87,7 +98,7 @@ export function CriticalScene({
     return () => {
       frames.stop();
     };
-  }, [area, id, landings, onDone, fadeStart]);
+  }, [area, id, landings, onDone, fadeStart, sloganAt]);
 
   function drawScene(context: Context) {
     animation.current?.draw(context._context);

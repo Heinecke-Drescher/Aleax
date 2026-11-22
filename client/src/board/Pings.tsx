@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Group, Shape } from "react-konva";
 import type { Awareness } from "../room/connection/connectRoom";
 import { pingKey, toPing, type Ping } from "../room/connection/pings";
+import { usePlaySound } from "../useSounds";
 import { PING_SECONDS, pingRings } from "./pingRings";
 import { useStageZoom } from "./useStageZoom";
 
@@ -70,6 +71,7 @@ interface PingsProps {
 export function Pings({ awareness }: PingsProps) {
   const { groupRef, zoom } = useStageZoom();
   const [shown, setShown] = useState<Ping[]>([]);
+  const playSound = usePlaySound();
 
   useEffect(() => {
     if (!awareness) return;
@@ -79,11 +81,13 @@ export function Pings({ awareness }: PingsProps) {
         (ping) => !seen.has(pingKey(ping)),
       );
       for (const ping of fresh) seen.add(pingKey(ping));
-      if (fresh.length > 0) setShown((pings) => [...pings, ...fresh]);
+      if (fresh.length === 0) return;
+      setShown((pings) => [...pings, ...fresh]);
+      playSound("ping");
     };
     awareness.on("change", showNew);
     return () => awareness.off("change", showNew);
-  }, [awareness]);
+  }, [awareness, playSound]);
 
   const done = useCallback(
     (key: string) =>

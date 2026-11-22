@@ -191,5 +191,12 @@ export function Natural1Scene(props: CriticalSceneProps) {
     canvas.restore();
   }
 
-  return <CriticalScene {...props} fadeStart={FADE_START} start={start} />;
+  return (
+    <CriticalScene
+      {...props}
+      fadeStart={FADE_START}
+      sloganAt={FAILED_AT}
+      start={start}
+    />
+  );
 }

@@ -21,7 +21,6 @@ import {
   IconVolume,
 } from "@tabler/icons-react";
 import { Link } from "react-router";
-import { useSoundSetting } from "../dice/useSoundSetting";
 import { MusicPopover } from "../music/MusicPopover";
 import { usePlayer } from "../player/PlayerContext";
 import type {
@@ -29,6 +28,7 @@ import type {
   ConnectionState,
 } from "../room/connection/connectRoom";
 import { useWideLayout } from "../theme";
+import { useSoundSetting } from "../useSounds";
 import { RoomPeople } from "./RoomPeople";
 import { canShareRoomLink, copyRoomLink, shareRoomLink } from "./roomLink";
 import { useDmControl } from "./useDmControl";
