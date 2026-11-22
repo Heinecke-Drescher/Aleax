@@ -33,6 +33,7 @@ import { useBackgroundImage } from "../room/useBackgroundImage";
 import { cursorArrowCss } from "./cursorArrow";
 import { Cursors } from "./Cursors";
 import { Pings } from "./Pings";
+import { BackgroundImage } from "./map/BackgroundImage";
 import { Cells } from "./map/Cells";
 import { FogOfWar } from "./map/FogOfWar";
 import { GridLines } from "./map/GridLines";
@@ -337,9 +338,7 @@ export function Board({
         // Otherwise the browser pans or zooms the page where no shape listens.
         touchAction: "none",
         backgroundColor: mapSurroundColor(theme, colorScheme),
-        backgroundImage: backgroundImage ? `url("${backgroundImage}")` : "none",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        isolation: "isolate",
       }}
       onMouseDown={(event) => {
         // Keeps the focus in a new text field: the browser moves it on mousedown, also after a
@@ -350,6 +349,7 @@ export function Board({
       onDragOver={drops.onDragOver}
       onDrop={drops.onDrop}
     >
+      {backgroundImage && <BackgroundImage url={backgroundImage} />}
       <Stage
         width={width}
         height={height}
