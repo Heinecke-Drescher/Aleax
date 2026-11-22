@@ -1,7 +1,7 @@
 import {
   createImage,
   LARGE_IMAGE_FILE_MEGABYTES,
-  LARGE_IMAGE_SIZE,
+  LARGE_IMAGE,
 } from "../images/createImage";
 import { useImageFileDialog } from "../images/useImageFileDialog";
 import { MAP_IMAGE_KEY } from "../room/mapImage";
@@ -24,7 +24,7 @@ export function useMapImageFile(onAlign: () => void) {
     multiple: false,
     onFile: async (file) => {
       const size = await imageSize(file);
-      const image = await createImage(file, LARGE_IMAGE_SIZE);
+      const image = await createImage(file, LARGE_IMAGE);
       room.assertSpaceForImage(image, MAP_IMAGE_KEY);
       room.setMapImage(image, size);
       onAlign();

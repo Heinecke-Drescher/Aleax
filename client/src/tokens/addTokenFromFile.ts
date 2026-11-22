@@ -1,4 +1,4 @@
-import { createImage, TOKEN_IMAGE_SIZE } from "../images/createImage";
+import { createImage, TOKEN_IMAGE } from "../images/createImage";
 import type { Room } from "../room/createRoom";
 import type { HeldToken } from "./holdTokens";
 
@@ -8,7 +8,7 @@ export async function tokenFromFile(
   room: Room,
   file: File,
 ): Promise<HeldToken> {
-  const imageDataUrl = await createImage(file, TOKEN_IMAGE_SIZE);
+  const imageDataUrl = await createImage(file, TOKEN_IMAGE);
   room.assertSpaceForImage(imageDataUrl);
   return { name: file.name.replace(/\.[^.]+$/, ""), imageDataUrl };
 }

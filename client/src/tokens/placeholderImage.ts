@@ -11,7 +11,7 @@ import skullSvg from "@tabler/icons/outline/skull.svg?raw";
 import stairsSvg from "@tabler/icons/outline/stairs.svg?raw";
 import chestSvg from "@tabler/icons/outline/treasure-chest.svg?raw";
 import { isLightColor, type MantineTheme } from "@mantine/core";
-import { createImage, TOKEN_IMAGE_SIZE } from "../images/createImage";
+import { createImage, TOKEN_IMAGE } from "../images/createImage";
 import { coloredIconSvg } from "../images/iconSvg";
 import type { PlayerColor } from "../room/playerColors";
 
@@ -92,7 +92,7 @@ export function createPlaceholderImage(
 ) {
   const svg = placeholderSvg(content, color, theme);
   const file = new File([svg], "placeholder.svg", { type: "image/svg+xml" });
-  return createImage(file, TOKEN_IMAGE_SIZE);
+  return createImage(file, TOKEN_IMAGE);
 }
 
 function labelSvg(label: string, ink: string, fontFamily: string) {

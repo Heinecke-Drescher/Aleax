@@ -19,7 +19,7 @@ import {
 } from "mantine-contextmenu";
 import { useRef, type MouseEvent as ReactMouseEvent } from "react";
 import { useFogGuard } from "../../fog/useFogGuard";
-import { createImage, TOKEN_IMAGE_SIZE } from "../../images/createImage";
+import { createImage, TOKEN_IMAGE } from "../../images/createImage";
 import { useImageFileDialog } from "../../images/useImageFileDialog";
 import { usePlayer } from "../../player/PlayerContext";
 import { showRoomSpaceError } from "../../images/showRoomSpaceError";
@@ -65,7 +65,7 @@ export function useTokenMenu(
       // Someone may have removed it while the file dialog was open.
       const token = id === null ? null : validToken(id, room.tokensMap.get(id));
       if (!token) return;
-      const image = await createImage(file, TOKEN_IMAGE_SIZE);
+      const image = await createImage(file, TOKEN_IMAGE);
       room.assertSpaceForImage(image, token.imageId);
       room.setTokenImage(token.id, image);
     },
