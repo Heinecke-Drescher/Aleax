@@ -18,8 +18,10 @@ import {
   IconMoon,
   IconMusic,
   IconShare,
+  IconVolume,
 } from "@tabler/icons-react";
 import { Link } from "react-router";
+import { useSoundSetting } from "../dice/useSoundSetting";
 import { MusicPopover } from "../music/MusicPopover";
 import { usePlayer } from "../player/PlayerContext";
 import type {
@@ -53,6 +55,7 @@ export function AleaxMenu({
   const isDisconnected = connection === "disconnected";
   const { setColorScheme } = useMantineColorScheme();
   const isDark = useComputedColorScheme("light") === "dark";
+  const [isSoundOn, setSoundOn] = useSoundSetting();
   const fullscreen = useFullscreenDocument();
   // On a phone the system's share sheet reaches the group's chat directly.
   const isSharing = !useWideLayout() && canShareRoomLink();
@@ -110,6 +113,13 @@ export function AleaxMenu({
               onClick={() => setColorScheme(isDark ? "light" : "dark")}
             >
               Dark mode
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<IconVolume size={16} />}
+              rightSection={isSoundOn && <IconCheck size={16} />}
+              onClick={() => setSoundOn(!isSoundOn)}
+            >
+              Sound
             </Menu.Item>
             {document.fullscreenEnabled && (
               <Menu.Item

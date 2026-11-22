@@ -130,3 +130,8 @@ reach the other players. Run it from another computer through an SSH tunnel
 Delete `/tmp/aleax-load` afterwards.
 
 </details>
+
+## Credits
+
+Dice sounds: [Casino Audio](https://kenney.nl/assets/casino-audio) by Kenney
+(CC0).

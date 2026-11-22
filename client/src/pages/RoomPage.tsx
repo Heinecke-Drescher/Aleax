@@ -37,6 +37,7 @@ import { ThrowDieContext } from "../dice/throwDie";
 import type { ScreenSample } from "../useScreenDrag";
 import type { DieSides } from "../room/dice";
 import { useCriticalRolls } from "../dice/useCriticalRolls";
+import { useDieSound } from "../dice/useDieSound";
 import { RoomContext, SharedRoomContext } from "../room/RoomContext";
 import { PlayerContext } from "../player/PlayerContext";
 import { FLOATING_GAP } from "../FloatingPanel";
@@ -117,6 +118,7 @@ function RoomView({ roomId }: { roomId: string }) {
   const preparation = usePreparation(room, id);
   const mapRoom = preparation.preparation?.room ?? room;
   const criticals = useCriticalRolls(room, isSynced);
+  useDieSound(room, isSynced);
   const board = useRef<BoardHandle>(null);
   const [selectedTokens, setSelectedTokens] = useState<readonly string[]>([]);
   // Without a board, e.g. while the map shows an error, there is nothing to find.
