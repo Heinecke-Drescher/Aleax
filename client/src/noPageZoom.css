@@ -1,0 +1,5 @@
+/* iOS ignores user-scalable=no, so a pinch outside the map would zoom the whole page. Scrolling
+   stays; elements with their own touch-action, like the map, keep it. */
+html {
+  touch-action: pan-x pan-y;
+}

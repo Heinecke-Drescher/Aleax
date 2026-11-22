@@ -3,6 +3,7 @@ import "@mantine/notifications/styles.css";
 import "mantine-contextmenu/styles.css";
 import "./contextMenu.css";
 import "./hover.css";
+import "./noPageZoom";
 import { MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
