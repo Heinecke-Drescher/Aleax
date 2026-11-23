@@ -1,47 +1,46 @@
 import { ActionIcon, Button, Popover, Stack, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconBucketDroplet, IconLine, IconPencil } from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
 import { useState } from "react";
 import { ToolTooltipLabel } from "./ToolTooltipLabel";
 import type { Tool } from "./tools/tool";
 
-const DRAW_TOOLS = [
-  {
-    tool: "line",
-    label: "Draw lines",
-    option: "Straight line",
-    icon: IconLine,
-  },
-  { tool: "pen", label: "Draw", option: "Freehand", icon: IconPencil },
-  {
-    tool: "paint",
-    label: "Paint cells",
-    option: "Paint cells",
-    icon: IconBucketDroplet,
-  },
-] as const;
+export interface ToolButton {
+  tool: Tool;
+  label: string;
+  icon: Icon;
+  // Shown below the label, for what the tool does that no button shows.
+  hint?: string;
+  // The name in a group's choice, where it differs from the label.
+  option?: string;
+}
 
-type DrawTool = (typeof DRAW_TOOLS)[number];
+// The first one is shown until another is chosen.
+export type ToolGroup = readonly [ToolButton, ...ToolButton[]];
 
-interface DrawToolButtonProps {
+interface ToolGroupButtonProps {
+  tools: ToolGroup;
+  hint: string;
   activeTool: Tool;
   onToolChange: (tool: Tool) => void;
 }
 
 // Like the text tool: clicking the active button opens the choice below it.
-export function DrawToolButton({
+export function ToolGroupButton({
+  tools,
+  hint,
   activeTool,
   onToolChange,
-}: DrawToolButtonProps) {
+}: ToolGroupButtonProps) {
   const [isPicking, picking] = useDisclosure();
-  const [lastTool, setLastTool] = useState<DrawTool>(DRAW_TOOLS[0]);
-  const active = DRAW_TOOLS.find(({ tool }) => tool === activeTool);
+  const [lastTool, setLastTool] = useState(tools[0]);
+  const active = tools.find(({ tool }) => tool === activeTool);
   const shown = active ?? lastTool;
   const { label, icon: ShownIcon } = shown;
 
-  function choose(drawTool: DrawTool) {
-    setLastTool(drawTool);
-    onToolChange(drawTool.tool);
+  function choose(toolButton: ToolButton) {
+    setLastTool(toolButton);
+    onToolChange(toolButton.tool);
     picking.close();
   }
 
@@ -54,12 +53,7 @@ export function DrawToolButton({
     >
       <Popover.Target>
         <Tooltip
-          label={
-            <ToolTooltipLabel
-              label={label}
-              hint="Click again for other ways to draw"
-            />
-          }
+          label={<ToolTooltipLabel label={label} hint={hint} />}
           position="bottom"
           disabled={isPicking}
         >
@@ -75,15 +69,15 @@ export function DrawToolButton({
       </Popover.Target>
       <Popover.Dropdown p={6}>
         <Stack gap={6}>
-          {DRAW_TOOLS.map((drawTool) => (
+          {tools.map((toolButton) => (
             <Button
-              key={drawTool.tool}
-              variant={drawTool === shown ? "filled" : "subtle"}
+              key={toolButton.tool}
+              variant={toolButton === shown ? "filled" : "subtle"}
               justify="flex-start"
-              leftSection={<drawTool.icon size={20} />}
-              onClick={() => choose(drawTool)}
+              leftSection={<toolButton.icon size={20} />}
+              onClick={() => choose(toolButton)}
             >
-              {drawTool.option}
+              {toolButton.option ?? toolButton.label}
             </Button>
           ))}
         </Stack>

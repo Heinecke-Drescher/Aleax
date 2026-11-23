@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
+  IconBucketDroplet,
   IconCheck,
   IconCircle,
   IconCone,
@@ -18,11 +19,12 @@ import {
   IconEraser,
   IconEye,
   IconEyeOff,
+  IconLine,
+  IconPencil,
   IconPointer,
   IconRectangle,
   IconResize,
   IconRuler,
-  type Icon,
 } from "@tabler/icons-react";
 import {
   FLOATING_BAR_SPACE,
@@ -31,23 +33,20 @@ import {
   FloatingPanel,
 } from "../FloatingPanel";
 import { usePlayer } from "../player/PlayerContext";
-import { DrawToolButton } from "./DrawToolButton";
 import { PAINT_COLORS, paintColorValue, type PaintColor } from "./paintColors";
 import type { TextFontSize } from "../room/texts";
 import { TextToolButton } from "./texts/TextToolButton";
+import {
+  ToolGroupButton,
+  type ToolButton,
+  type ToolGroup,
+} from "./ToolGroupButton";
 import { ToolTooltipLabel } from "./ToolTooltipLabel";
 import type { Tool } from "./tools/tool";
 import type { ReactNode, Ref } from "react";
 import { useWideLayout } from "../theme";
 
 export const TOOLBAR_SPACE = FLOATING_BAR_SPACE;
-
-interface ToolButton {
-  tool: Tool;
-  label: string;
-  icon: Icon;
-  hint?: string;
-}
 
 const MAP_TOOLS: ToolButton[] = [
   {
@@ -71,13 +70,24 @@ const ERASER_TOOL: ToolButton = {
   icon: IconEraser,
 };
 
-const SHAPE_TOOLS: ToolButton[] = [
-  { tool: "cone", label: "Cone area", icon: IconCone },
-  { tool: "rectangle", label: "Rectangle area", icon: IconRectangle },
-  { tool: "circle", label: "Circle area", icon: IconCircle },
+const DRAW_TOOLS: ToolGroup = [
+  {
+    tool: "line",
+    label: "Draw lines",
+    option: "Straight line",
+    icon: IconLine,
+  },
+  { tool: "pen", label: "Draw", option: "Freehand", icon: IconPencil },
+  { tool: "paint", label: "Paint cells", icon: IconBucketDroplet },
 ];
 
-const FOG_TOOLS: ToolButton[] = [
+const SHAPE_TOOLS: ToolGroup = [
+  { tool: "rectangle", label: "Rectangle area", icon: IconRectangle },
+  { tool: "circle", label: "Circle area", icon: IconCircle },
+  { tool: "cone", label: "Cone area", icon: IconCone },
+];
+
+const FOG_TOOLS: ToolGroup = [
   { tool: "hide", label: "Hide under fog", icon: IconEyeOff },
   { tool: "reveal", label: "Reveal fog", icon: IconEye },
 ];
@@ -111,10 +121,21 @@ export function Toolbar({
   const [isPicking, picking] = useDisclosure();
   const isWide = useWideLayout();
   // A narrow screen, e.g. a phone, keeps the tools players need most in view.
-  const menuTools = [RESIZE_TOOL, ...SHAPE_TOOLS, ...(isDm ? FOG_TOOLS : [])];
+  const menuTools = [RESIZE_TOOL, ...(isDm ? FOG_TOOLS : [])];
   // The menu's button shows the tool picked from it, so the toolbar always tells what is active.
   const pickedFromMenu = menuTools.find(({ tool }) => tool === activeTool);
   const MenuIcon = pickedFromMenu ? pickedFromMenu.icon : IconDots;
+
+  function toolGroup(tools: ToolGroup, hint: string) {
+    return (
+      <ToolGroupButton
+        tools={tools}
+        hint={hint}
+        activeTool={activeTool}
+        onToolChange={onToolChange}
+      />
+    );
+  }
 
   function toolButton({ tool, label, icon: ToolIcon, hint }: ToolButton) {
     return (
@@ -149,7 +170,7 @@ export function Toolbar({
           {MAP_TOOLS.map(toolButton)}
           {isWide && toolButton(RESIZE_TOOL)}
           <Divider orientation="vertical" />
-          <DrawToolButton activeTool={activeTool} onToolChange={onToolChange} />
+          {toolGroup(DRAW_TOOLS, "Click again for other ways to draw")}
           {toolButton(ERASER_TOOL)}
           <TextToolButton
             isActive={activeTool === "text"}
@@ -157,12 +178,8 @@ export function Toolbar({
             size={textSize}
             onSizeChange={onTextSizeChange}
           />
-          {isWide && (
-            <>
-              <Divider orientation="vertical" />
-              {SHAPE_TOOLS.map(toolButton)}
-            </>
-          )}
+          {isWide && <Divider orientation="vertical" />}
+          {toolGroup(SHAPE_TOOLS, "Click again for other areas")}
           <Popover
             opened={isPicking}
             onDismiss={picking.close}
@@ -208,7 +225,10 @@ export function Toolbar({
           {isWide && isDm && (
             <>
               <Divider orientation="vertical" />
-              {FOG_TOOLS.map(toolButton)}
+              {toolGroup(
+                FOG_TOOLS,
+                "Click again to switch hiding and revealing",
+              )}
             </>
           )}
           {!isWide && (
