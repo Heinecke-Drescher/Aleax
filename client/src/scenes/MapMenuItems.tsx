@@ -15,6 +15,14 @@ export function MapMenuItems({
   actions: MapActions;
   scene?: SceneItems;
 }) {
+  const showsMapImageItems = mapImage.canSet && mapImage.hasMapImage;
+  const canRemoveBackground = background.canSet && background.hasBackground;
+  const hasRemovals =
+    showsMapImageItems ||
+    canRemoveBackground ||
+    drawings.canClear ||
+    scene !== undefined;
+
   return (
     <>
       {scene && (
@@ -26,33 +34,33 @@ export function MapMenuItems({
           <Menu.Divider />
         </>
       )}
-      {files.canImport && (
-        <Menu.Item onClick={files.importMap}>Import map</Menu.Item>
-      )}
-      <Menu.Item onClick={files.exportMap}>Export map</Menu.Item>
-      {(mapImage.canSet || background.canSet) && <Menu.Divider />}
       {mapImage.canSet && (
         <Menu.Item onClick={mapImage.chooseMapImage}>Set map image</Menu.Item>
       )}
-      {mapImage.canSet && mapImage.hasMapImage && (
+      {showsMapImageItems && (
         <Menu.Item onClick={mapImage.alignMapImage}>Align map image</Menu.Item>
-      )}
-      {mapImage.canSet && mapImage.hasMapImage && (
-        <Menu.Item color="red" onClick={mapImage.removeMapImage}>
-          Remove map image
-        </Menu.Item>
       )}
       {background.canSet && (
         <Menu.Item onClick={background.chooseBackground}>
           Set background
         </Menu.Item>
       )}
-      {background.canSet && background.hasBackground && (
+      {(mapImage.canSet || background.canSet) && <Menu.Divider />}
+      {files.canImport && (
+        <Menu.Item onClick={files.importMap}>Import map</Menu.Item>
+      )}
+      <Menu.Item onClick={files.exportMap}>Export map</Menu.Item>
+      {hasRemovals && <Menu.Divider />}
+      {showsMapImageItems && (
+        <Menu.Item color="red" onClick={mapImage.removeMapImage}>
+          Remove map image
+        </Menu.Item>
+      )}
+      {canRemoveBackground && (
         <Menu.Item color="red" onClick={background.removeBackground}>
           Remove background
         </Menu.Item>
       )}
-      {(drawings.canClear || scene) && <Menu.Divider />}
       {drawings.canClear && (
         <Menu.Item color="red" onClick={drawings.clearDrawings}>
           Clear drawings
