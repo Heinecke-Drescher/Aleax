@@ -6,13 +6,11 @@ import {
   Menu,
   Popover,
   Stack,
-  Text,
   Tooltip,
   useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  IconBucketDroplet,
   IconCheck,
   IconCircle,
   IconCone,
@@ -20,7 +18,6 @@ import {
   IconEraser,
   IconEye,
   IconEyeOff,
-  IconPencil,
   IconPointer,
   IconRectangle,
   IconResize,
@@ -34,9 +31,11 @@ import {
   FloatingPanel,
 } from "../FloatingPanel";
 import { usePlayer } from "../player/PlayerContext";
+import { DrawToolButton } from "./DrawToolButton";
 import { PAINT_COLORS, paintColorValue, type PaintColor } from "./paintColors";
 import type { TextFontSize } from "../room/texts";
 import { TextToolButton } from "./texts/TextToolButton";
+import { ToolTooltipLabel } from "./ToolTooltipLabel";
 import type { Tool } from "./tools/tool";
 import type { ReactNode, Ref } from "react";
 import { useWideLayout } from "../theme";
@@ -47,7 +46,6 @@ interface ToolButton {
   tool: Tool;
   label: string;
   icon: Icon;
-  // Shown below the label, for what the tool does that no button shows.
   hint?: string;
 }
 
@@ -67,11 +65,11 @@ const RESIZE_TOOL: ToolButton = {
   icon: IconResize,
 };
 
-const DRAWING_TOOLS: ToolButton[] = [
-  { tool: "pen", label: "Draw", icon: IconPencil },
-  { tool: "paint", label: "Paint cells", icon: IconBucketDroplet },
-  { tool: "eraser", label: "Erase", icon: IconEraser },
-];
+const ERASER_TOOL: ToolButton = {
+  tool: "eraser",
+  label: "Erase",
+  icon: IconEraser,
+};
 
 const SHAPE_TOOLS: ToolButton[] = [
   { tool: "cone", label: "Cone area", icon: IconCone },
@@ -122,19 +120,7 @@ export function Toolbar({
     return (
       <Tooltip
         key={tool}
-        label={
-          hint ? (
-            <>
-              {label}
-              {/* Dimmed by opacity, as the tooltip's colors flip with the color scheme. */}
-              <Text size="xs" opacity={0.75}>
-                {hint}
-              </Text>
-            </>
-          ) : (
-            label
-          )
-        }
+        label={<ToolTooltipLabel label={label} hint={hint} />}
         position="bottom"
       >
         <ActionIcon
@@ -163,7 +149,8 @@ export function Toolbar({
           {MAP_TOOLS.map(toolButton)}
           {isWide && toolButton(RESIZE_TOOL)}
           <Divider orientation="vertical" />
-          {DRAWING_TOOLS.map(toolButton)}
+          <DrawToolButton activeTool={activeTool} onToolChange={onToolChange} />
+          {toolButton(ERASER_TOOL)}
           <TextToolButton
             isActive={activeTool === "text"}
             onSelect={() => onToolChange("text")}

@@ -3,6 +3,7 @@ import type { TextFontSize } from "../../room/texts";
 import type { SelectionControls } from "../selection/useSelection";
 import { useEraserTool } from "./eraser";
 import { useFogTool } from "./fog";
+import { useLineTool } from "./line";
 import { useMeasureTool } from "./measure";
 import { usePaintTool } from "./paint";
 import { usePenTool } from "./pen";
@@ -20,7 +21,8 @@ export function useBoardTools(
   textSize: TextFontSize,
   onShapePlaced: (id: string) => void,
 ) {
-  const { tool: pen, draftPoints } = usePenTool(room, color);
+  const pen = usePenTool(room, color);
+  const line = useLineTool(room, color);
   const { tool: text, ...texts } = useTextTool(room, color, textSize);
   const { tool: measure, measurement } = useMeasureTool(room);
   const cone = useShapeTool(room, "cone", color, onShapePlaced);
@@ -32,7 +34,8 @@ export function useBoardTools(
   const tools: Record<Tool, BoardTool> = {
     select,
     paint: usePaintTool(room, color),
-    pen,
+    pen: pen.tool,
+    line: line.tool,
     eraser: useEraserTool(room),
     text,
     measure,
@@ -46,7 +49,7 @@ export function useBoardTools(
   };
   return {
     activeTool: tools[tool],
-    draftPoints,
+    draftPoints: pen.draftPoints ?? line.draftPoints,
     measurement,
     shapeDraft: cone.draft ?? rectangle.draft ?? circle.draft,
     fogFrame: reveal.frame ?? hide.frame,

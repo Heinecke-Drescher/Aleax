@@ -6,6 +6,7 @@ export type Tool =
   | "select"
   | "paint"
   | "pen"
+  | "line"
   | "eraser"
   | "text"
   | "measure"
