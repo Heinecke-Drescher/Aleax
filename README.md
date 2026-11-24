@@ -12,9 +12,15 @@ through public [Nostr](https://nostr.com/) relays and then talk directly.
 
 Good to know:
 
-- Every browser keeps its own copy of the room. Whoever comes back later gets
-  the changes from the others who are in the room.
-- The room link is the key to the room. The relays see only encrypted offers.
+- Every browser keeps its own copy of the room, and the copies only meet while
+  players are in the room together. Whoever joins while nobody else is there
+  sees just their own copy, or an empty room the first time, so the DM should
+  be in the room when the others arrive.
+- Clearing the site data of the browser deletes its copy. To keep a map safe,
+  use **Export map** in the map menu.
+- The room link is the key to the room. The relays see only encrypted offers,
+  but the players see each other's IP addresses, as their browsers connect
+  directly.
 - On mobile data the players often cannot reach each other, as many networks
   block direct connections. Use Wi-Fi, or host your own copy with a TURN server.
 
