@@ -26,7 +26,9 @@ Good to know:
    source.
 3. Open **Actions**, allow workflows in your fork, pick **Pages** and click
    **Run workflow**. Your copy is then at `https://<your-name>.github.io/Aleax/`
-   and updates itself with every push to `main`.
+   and is built again with every push to `main`.
+
+To get a newer version of Aleax, click **Sync fork** on your fork's page.
 
 For players on mobile data, add a TURN server, which relays the data when a
 direct connection fails. Get one from a provider such as
