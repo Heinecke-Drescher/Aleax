@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Awareness } from "y-protocols/awareness";
 import * as Y from "yjs";
+import { ROOM_HISTORY } from "../roomStore";
 import {
   ALONE_SYNC_MS,
   ANSWER_SYNC_MS,
@@ -194,6 +195,35 @@ describe("linkPeers", () => {
     expect(guest.awareness.getStates().has(host.awareness.clientID)).toBe(
       false,
     );
+  });
+
+  it("marks what a newcomer catches up on as room history", () => {
+    const host = join("host");
+    host.doc.getMap("tokens").set("t1", "earlier");
+    const guest = join("guest");
+    const origins: unknown[] = [];
+    guest.doc.on("afterTransaction", (transaction) =>
+      origins.push(transaction.origin),
+    );
+
+    network.connect("host", "guest");
+    host.doc.getMap("tokens").set("t2", "now");
+
+    expect(origins[0]).toBe(ROOM_HISTORY);
+    expect(origins.slice(1)).not.toContain(ROOM_HISTORY);
+    expect(guest.doc.getMap("tokens").get("t2")).toBe("now");
+  });
+
+  it("passes on only its own changes, not what it caught up on", () => {
+    const host = join("host");
+    host.doc.getMap("tokens").set("t1", "host");
+    join("guest");
+    const other = join("other");
+    network.connect("guest", "other");
+
+    network.connect("host", "guest");
+
+    expect(other.doc.getMap("tokens").has("t1")).toBe(false);
   });
 
   it("shows a peer again that comes back after a short drop", () => {

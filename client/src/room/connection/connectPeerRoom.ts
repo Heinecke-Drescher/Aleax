@@ -8,6 +8,7 @@ import {
 } from "y-protocols/awareness";
 import * as Y from "yjs";
 import { notifyError } from "../../notifyError";
+import { ROOM_HISTORY } from "../roomStore";
 import type { RoomConnection, RoomEvents } from "./connectRoom";
 import { parseTurnServers } from "./turnServers";
 
@@ -214,7 +215,9 @@ export function linkPeers(
   );
   missing.onMessage(
     whileLinked((update: Uint8Array) => {
-      Y.applyUpdate(doc, update, peers);
+      // A roll made in the very moment two players meet can come with the
+      // answer; it then shows only in the history.
+      Y.applyUpdate(doc, update, ROOM_HISTORY);
       markSynced();
     }),
   );
@@ -229,7 +232,7 @@ export function linkPeers(
   );
 
   function sendOwnUpdate(update: Uint8Array, origin: unknown) {
-    if (origin !== peers) updates.send(update);
+    if (origin !== peers && origin !== ROOM_HISTORY) updates.send(update);
   }
 
   function handlePresence(

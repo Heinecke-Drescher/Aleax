@@ -110,6 +110,10 @@ export function validValues<V, T>(
 // Changes made with this origin stay out of undo.
 export const OUTSIDE_UNDO = Symbol("outside undo");
 
+// Changes with this origin happened while this player was away from the others:
+// what a peer sends so that this browser catches up, on joining or after a drop.
+export const ROOM_HISTORY = Symbol("room history");
+
 export function createRoomStore(doc: Y.Doc, meter: SpaceMeter) {
   // These hold what other players wrote, so they are read only through `validToken`,
   // `validCell`, `validStroke`, `validMapBounds` and `validRoll`.

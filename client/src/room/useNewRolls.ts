@@ -1,7 +1,7 @@
-import { useEffect, useEffectEvent } from "react";
+import { useEffectEvent, useLayoutEffect } from "react";
 import type * as Y from "yjs";
 import { validRoll } from "./rolls";
-import type { Roll } from "./roomStore";
+import { ROOM_HISTORY, type Roll } from "./roomStore";
 
 // Reports only rolls added while enabled, so rolls loaded with the room are not reported.
 export function useNewRolls(
@@ -11,20 +11,26 @@ export function useNewRolls(
 ) {
   const reportRoll = useEffectEvent(onRoll);
 
-  useEffect(() => {
+  // A layout effect listens before anything else runs, so no roll slips
+  // through between rendering and listening.
+  useLayoutEffect(() => {
     if (!enabled) return;
     const observer = (event: Y.YArrayEvent<unknown>) => {
-      for (const { insert } of event.changes.delta) {
-        if (!Array.isArray(insert)) continue;
-        for (const value of insert) {
-          const roll = validRoll(value);
-          if (roll) reportRoll(roll);
-        }
-      }
+      for (const roll of newRolls(event)) reportRoll(roll);
     };
     rollsArray.observe(observer);
     return () => {
       rollsArray.unobserve(observer);
     };
   }, [rollsArray, enabled]);
+}
+
+// Rolls that reach a player only to catch up were made earlier.
+export function newRolls(event: Y.YArrayEvent<unknown>): Roll[] {
+  if (event.transaction.origin === ROOM_HISTORY) return [];
+  return event.changes.delta.flatMap(({ insert }) =>
+    Array.isArray(insert)
+      ? insert.flatMap((value) => validRoll(value) ?? [])
+      : [],
+  );
 }
