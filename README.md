@@ -10,14 +10,19 @@ Open https://heinecke-drescher.github.io/Aleax/, create a room and send its link
 to your friends. Nothing runs on your computer: the browsers find each other
 through public [Nostr](https://nostr.com/) relays and then talk directly.
 
+**Rooms are stored only in the players' browsers, not on any server, and
+browsers can delete them without asking.**
+
 Good to know:
 
 - Every browser keeps its own copy of the room, and the copies only meet while
   players are in the room together. Whoever joins while nobody else is there
   sees just their own copy, or an empty room the first time, so the DM should
   be in the room when the others arrive.
-- Clearing the site data of the browser deletes its copy. To keep a map safe,
-  use **Export map** in the map menu.
+- A browser deletes its copy for example when site data is cleared, a private
+  window is closed, space runs low or the site was not visited for a while.
+  Another browser or device has no copy. To keep a map safe, use **Export map**
+  in the map menu.
 - The room link is the key to the room. The relays see only encrypted offers,
   but the players see each other's IP addresses, as their browsers connect
   directly.

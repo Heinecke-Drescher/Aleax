@@ -19,9 +19,10 @@ export interface RoomConnection {
 
 // The build decides the way for every room: `vite --mode p2p` connects the
 // players directly, every other mode through the sync server.
+export const IS_PEER_TO_PEER = import.meta.env.MODE === "p2p";
+
 export const connectRoom: (
   roomId: string,
   doc: Y.Doc,
   events: RoomEvents,
-) => RoomConnection =
-  import.meta.env.MODE === "p2p" ? connectPeerRoom : connectServerRoom;
+) => RoomConnection = IS_PEER_TO_PEER ? connectPeerRoom : connectServerRoom;
