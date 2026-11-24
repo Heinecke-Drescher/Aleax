@@ -1,4 +1,5 @@
-import { joinRoom, type Room } from "trystero";
+import { notifications } from "@mantine/notifications";
+import { getRelaySockets, joinRoom, type Room } from "trystero";
 import { IndexeddbPersistence } from "y-indexeddb";
 import {
   Awareness,
@@ -10,12 +11,14 @@ import * as Y from "yjs";
 import { notifyError } from "../../notifyError";
 import { ROOM_HISTORY } from "../roomStore";
 import type { RoomConnection, RoomEvents } from "./connectRoom";
+import { CONNECTION_CHECK_MS, createConnectionWatch } from "./connectionWatch";
 import { parseTurnServers } from "./turnServers";
 
 // Public relays are shared by many apps, so the id has to be unique to Aleax.
 const APP_ID = "github.com/Heinecke-Drescher/Aleax";
 export const ALONE_SYNC_MS = 3000;
 export const ANSWER_SYNC_MS = 10_000;
+export const BLOCKED_PEER_WARNING_MS = 20_000;
 // Read when the app loads, so a wrong build fails at once.
 const TURN_SERVERS = parseTurnServers(import.meta.env.VITE_TURN_ICE_SERVERS);
 
@@ -48,7 +51,7 @@ export function connectPeerRoom(
   function meetPeers() {
     if (hasLeft || hasJoined) return;
     hasJoined = true;
-    leavePeers = joinPeers(roomId, doc, awareness, events, () => hasLeft);
+    leavePeers = joinPeers(roomId, doc, awareness, events);
   }
   // Meeting the others only after loading the copy lets the state vectors
   // tell them what this browser already has.
@@ -84,7 +87,6 @@ function joinPeers(
   doc: Y.Doc,
   awareness: Awareness,
   { onSynced, onConnectionChange }: RoomEvents,
-  hasLeft: () => boolean,
 ) {
   // The room id is the secret of the room link, so the relays only see
   // offers that nobody without the link can read.
@@ -99,14 +101,52 @@ function joinPeers(
   const unlink = linkPeers(doc, awareness, trysteroPeers(room), () =>
     onSynced(true),
   );
-  room.ready.then(
-    () => !hasLeft() && onConnectionChange("connected"),
-    () => !hasLeft() && onConnectionChange("disconnected"),
-  );
+  // Trystero tells nothing when relays are lost later, so they are looked at.
+  const watch = createConnectionWatch(onConnectionChange);
+  const checkConnection = () =>
+    watch.check(openRelayCount(), Object.keys(room.getPeers()).length);
+  const watchTimer = setInterval(checkConnection, CONNECTION_CHECK_MS);
+  const warningTimers = new Set<ReturnType<typeof setTimeout>>();
+  let hasWarnedOfBlockedPeer = false;
+  // Trystero tries again after a failed attempt, so only a player that is
+  // still missing a while later counts as blocked.
+  function warnIfStillMissing(peerId: string, isTurnSet: boolean) {
+    const timer = setTimeout(() => {
+      warningTimers.delete(timer);
+      if (hasWarnedOfBlockedPeer || peerId in room.getPeers()) return;
+      hasWarnedOfBlockedPeer = true;
+      notifications.show({
+        title: "A player could not be reached",
+        message: isTurnSet
+          ? "The relay server for blocked networks did not help either."
+          : "On mobile data, try Wi-Fi.",
+      });
+    }, BLOCKED_PEER_WARNING_MS);
+    warningTimers.add(timer);
+  }
+  const stopErrors = room.onError((error) => {
+    if (error.code === "relay-failed") {
+      watch.stopWaiting();
+      checkConnection();
+    }
+    if (error.code === "peer-connect-failed") {
+      console.warn(error.message, error.cause);
+      warnIfStillMissing(error.peerId, error.turnConfigured);
+    }
+  });
   return () => {
+    clearInterval(watchTimer);
+    for (const timer of warningTimers) clearTimeout(timer);
+    stopErrors();
     unlink();
     void room.leave();
   };
+}
+
+function openRelayCount() {
+  return Object.values(getRelaySockets()).filter(
+    (socket) => socket.readyState === WebSocket.OPEN,
+  ).length;
 }
 
 function trysteroPeers(room: Room): Peers {

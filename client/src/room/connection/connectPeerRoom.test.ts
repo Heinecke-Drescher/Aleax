@@ -5,10 +5,53 @@ import { ROOM_HISTORY } from "../roomStore";
 import {
   ALONE_SYNC_MS,
   ANSWER_SYNC_MS,
+  BLOCKED_PEER_WARNING_MS,
+  connectPeerRoom,
   linkPeers,
   type PeerChannel,
   type Peers,
 } from "./connectPeerRoom";
+import { CONNECTION_CHECK_MS } from "./connectionWatch";
+
+const trystero = vi.hoisted(() => ({
+  sockets: {} as Record<string, { readyState: number }>,
+  peers: {} as Record<string, object>,
+  onError: (_error: object) => {},
+  leave: () => Promise.resolve(),
+}));
+const showNotification = vi.hoisted(() => vi.fn());
+
+vi.mock("trystero", () => ({
+  getRelaySockets: () => trystero.sockets,
+  joinRoom: () => ({
+    makeAction: () => ({
+      send: () => Promise.resolve(),
+      onMessage: () => {},
+    }),
+    onPeerJoin: () => {},
+    onPeerLeave: () => {},
+    onError: (handler: (error: object) => void) => {
+      trystero.onError = handler;
+      return () => {
+        trystero.onError = () => {};
+      };
+    },
+    getPeers: () => trystero.peers,
+    leave: () => trystero.leave(),
+  }),
+}));
+
+vi.mock("y-indexeddb", () => ({
+  IndexeddbPersistence: class {
+    whenSynced = Promise.resolve();
+    _db = Promise.resolve();
+    destroy = () => Promise.resolve();
+  },
+}));
+
+vi.mock("@mantine/notifications", () => ({
+  notifications: { show: showNotification },
+}));
 
 type Handler = (data: Uint8Array, peerId: string) => void;
 
@@ -265,5 +308,77 @@ describe("linkPeers", () => {
     host.doc.getMap("tokens").set("t1", "host");
 
     expect(guest.doc.getMap("tokens").has("t1")).toBe(false);
+  });
+});
+
+describe("connectPeerRoom", () => {
+  const events = {
+    onSynced: vi.fn(),
+    onConnectionChange: vi.fn(),
+    onRoomFull: vi.fn(),
+  };
+
+  function peerConnectFailed(peerId: string, turnConfigured = false) {
+    trystero.onError({ code: "peer-connect-failed", peerId, turnConfigured });
+  }
+
+  async function enter() {
+    const connection = connectPeerRoom("abcdefghijkl", new Y.Doc(), events);
+    // The saved copy loads before the others are met.
+    await vi.advanceTimersByTimeAsync(0);
+    return connection;
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    trystero.sockets = {};
+    trystero.peers = {};
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("reports the connection and nothing after leaving", async () => {
+    const connection = await enter();
+    trystero.sockets = { relay: { readyState: WebSocket.OPEN } };
+
+    await vi.advanceTimersByTimeAsync(CONNECTION_CHECK_MS);
+    expect(events.onConnectionChange).toHaveBeenLastCalledWith("connected");
+
+    connection.disconnect();
+    trystero.sockets = {};
+    peerConnectFailed("peer");
+    await vi.advanceTimersByTimeAsync(BLOCKED_PEER_WARNING_MS);
+
+    expect(events.onConnectionChange).toHaveBeenCalledOnce();
+    expect(showNotification).not.toHaveBeenCalled();
+  });
+
+  it("warns once of players still missing after failed attempts", async () => {
+    const connection = await enter();
+    peerConnectFailed("first");
+    peerConnectFailed("second");
+
+    await vi.advanceTimersByTimeAsync(BLOCKED_PEER_WARNING_MS);
+
+    expect(showNotification).toHaveBeenCalledOnce();
+    expect(showNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "On mobile data, try Wi-Fi." }),
+    );
+    connection.disconnect();
+  });
+
+  it("does not warn of a player that got through after all", async () => {
+    const connection = await enter();
+    peerConnectFailed("peer", true);
+    trystero.peers = { peer: {} };
+
+    await vi.advanceTimersByTimeAsync(BLOCKED_PEER_WARNING_MS);
+
+    expect(showNotification).not.toHaveBeenCalled();
+    connection.disconnect();
   });
 });
