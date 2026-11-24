@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => ({
         ? undefined
         : { "/sync": { target: "ws://localhost:3000", ws: true } },
   },
+  // A Quick Tunnel gives the HTTPS address that WebRTC needs on other devices.
+  preview: { allowedHosts: [".trycloudflare.com"] },
   build: {
     outDir: "../dist/client",
     emptyOutDir: true,

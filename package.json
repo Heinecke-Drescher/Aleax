@@ -11,6 +11,7 @@
     "dev": "concurrently --names web,sync npm:dev:web npm:dev:sync",
     "dev:web": "vite",
     "dev:p2p": "vite --mode p2p",
+    "preview:p2p": "vite build --mode p2p --outDir ../dist/p2p && vite preview --mode p2p --outDir ../dist/p2p",
     "dev:sync": "node --watch server/index.ts",
     "build": "tsc -b && vite build",
     "start": "node server/index.ts --client dist/client",
