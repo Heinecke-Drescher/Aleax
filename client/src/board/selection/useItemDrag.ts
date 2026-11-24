@@ -33,6 +33,8 @@ interface Drag {
   // Read at the start, as a drag stopped by a second finger ends without an event.
   byFinger: boolean;
   fingerLift: number;
+  // Where the bound function last put the dragged node, relative to the start.
+  shown: { dx: number; dy: number };
 }
 
 export function useItemDrag(room: Room, selected: Items) {
@@ -87,7 +89,24 @@ export function useItemDrag(room: Room, selected: Items) {
               stage.scaleY(),
             )
           : FINGER_OFFSET,
+      shown: { dx: 0, dy: 0 },
     };
+    // Konva hands the bound function the place under the pointer every time, also when it did
+    // not move, so lifting and snapping start from there instead of from the last result.
+    node.dragBoundFunc((pointed) => boundPosition(node, pointed));
+  }
+
+  function boundPosition(node: Node, pointed: Vector2d) {
+    const state = current();
+    const parent = node.getParent();
+    const stage = node.getStage();
+    if (!parent || !stage) throw new Error("Dragged item is not on a stage");
+    const toParent = parent.getAbsoluteTransform().copy().invert();
+    state.shown = offsetFrom(toParent.point(pointed), stage.scaleY());
+    return parent.getAbsoluteTransform().point({
+      x: state.start.x + state.shown.dx,
+      y: state.start.y + state.shown.dy,
+    });
   }
 
   function current() {
@@ -95,16 +114,13 @@ export function useItemDrag(room: Room, selected: Items) {
     return drag.current;
   }
 
-  function offset(event: KonvaEventObject<DragEvent>) {
+  function offsetFrom(position: Vector2d, scale: number) {
     const { start, gridBounds, roundsToCells, byFinger, fingerLift } =
       current();
-    const node = event.target;
-    const stage = node.getStage();
-    if (!stage) throw new Error("Dragged item is not on a stage");
     // Above the finger, so the finger hides neither the items nor the ruler.
     const shown = byFinger
-      ? endAboveFinger(node.position(), start, stage.scaleY(), fingerLift)
-      : node.position();
+      ? endAboveFinger(position, start, scale, fingerLift)
+      : position;
     const dx = shown.x - start.x;
     const dy = shown.y - start.y;
     if (!gridBounds)
@@ -132,7 +148,7 @@ export function useItemDrag(room: Room, selected: Items) {
   // A drag handed over to the map before it started has nothing to move.
   function move(event: KonvaEventObject<DragEvent>) {
     if (!drag.current) return;
-    const { dx, dy } = offset(event);
+    const { dx, dy } = current().shown;
     placeAll(event, dx, dy);
     measure(dx, dy);
   }
@@ -160,8 +176,9 @@ export function useItemDrag(room: Room, selected: Items) {
 
   function end(event: KonvaEventObject<DragEvent>) {
     if (!drag.current) return;
-    const { items, lift } = current();
-    const { dx, dy } = offset(event);
+    const { items, lift, shown } = current();
+    const { dx, dy } = shown;
+    event.target.dragBoundFunc(undefined);
     // React draws the moved items from the room data, so the nodes go back first.
     placeAll(event, 0, 0);
     lift.drop();
