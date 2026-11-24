@@ -138,7 +138,10 @@ function RoomView({ roomId }: { roomId: string }) {
       board.current?.dropToken(tokenId, point),
     [],
   );
-  const alignMapImage = useCallback(() => board.current?.alignMapImage(), []);
+  const boardModes = {
+    onAlignMapImage: () => board.current?.alignMapImage(),
+    onResizeCanvas: () => board.current?.resizeCanvas(),
+  };
   // Without a board, e.g. while the map shows an error, there is no map to throw onto.
   const throwDie = useCallback(
     (sides: DieSides, samples: ScreenSample[]) =>
@@ -276,7 +279,7 @@ function RoomView({ roomId }: { roomId: string }) {
                           onShowToPlayers={() =>
                             changeMap(preparation.showToPlayers)
                           }
-                          onAlignMapImage={alignMapImage}
+                          boardModes={boardModes}
                         />
                       )}
                       {connection === "disconnected" && (

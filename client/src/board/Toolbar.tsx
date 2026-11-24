@@ -3,7 +3,6 @@ import {
   ColorSwatch,
   Divider,
   Group,
-  Menu,
   Popover,
   Stack,
   Tooltip,
@@ -12,10 +11,8 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconBucketDroplet,
-  IconCheck,
   IconCircle,
   IconCone,
-  IconDots,
   IconEraser,
   IconEye,
   IconEyeOff,
@@ -23,7 +20,6 @@ import {
   IconPencil,
   IconPointer,
   IconRectangle,
-  IconResize,
   IconRuler,
 } from "@tabler/icons-react";
 import {
@@ -57,12 +53,6 @@ const MAP_TOOLS: ToolButton[] = [
   },
   { tool: "measure", label: "Measure distance", icon: IconRuler },
 ];
-
-const RESIZE_TOOL: ToolButton = {
-  tool: "resize",
-  label: "Resize canvas",
-  icon: IconResize,
-};
 
 const ERASER_TOOL: ToolButton = {
   tool: "eraser",
@@ -119,12 +109,8 @@ export function Toolbar({
   const theme = useMantineTheme();
   const { isDm } = usePlayer();
   const [isPicking, picking] = useDisclosure();
+  // A narrow screen, e.g. a phone, leaves out most dividers to fit all tools.
   const isWide = useWideLayout();
-  // A narrow screen, e.g. a phone, keeps the tools players need most in view.
-  const menuTools = [RESIZE_TOOL, ...(isDm ? FOG_TOOLS : [])];
-  // The menu's button shows the tool picked from it, so the toolbar always tells what is active.
-  const pickedFromMenu = menuTools.find(({ tool }) => tool === activeTool);
-  const MenuIcon = pickedFromMenu ? pickedFromMenu.icon : IconDots;
 
   function toolGroup(tools: ToolGroup, hint: string) {
     return (
@@ -168,7 +154,6 @@ export function Toolbar({
       <Tooltip.Group>
         <Group gap={4} wrap="nowrap">
           {MAP_TOOLS.map(toolButton)}
-          {isWide && toolButton(RESIZE_TOOL)}
           <Divider orientation="vertical" />
           {toolGroup(DRAW_TOOLS, "Click again for other ways to draw")}
           {toolButton(ERASER_TOOL)}
@@ -222,46 +207,14 @@ export function Toolbar({
               </Stack>
             </Popover.Dropdown>
           </Popover>
-          {isWide && isDm && (
+          {isDm && (
             <>
-              <Divider orientation="vertical" />
+              {isWide && <Divider orientation="vertical" />}
               {toolGroup(
                 FOG_TOOLS,
                 "Click again to switch hiding and revealing",
               )}
             </>
-          )}
-          {!isWide && (
-            <Menu position="bottom-end" shadow="md">
-              <Menu.Target>
-                <Tooltip
-                  label={pickedFromMenu ? pickedFromMenu.label : "More tools"}
-                  position="bottom"
-                >
-                  <ActionIcon
-                    variant={pickedFromMenu ? "filled" : "subtle"}
-                    size="lg"
-                    aria-label="More tools"
-                  >
-                    <MenuIcon size={20} />
-                  </ActionIcon>
-                </Tooltip>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {menuTools.map(({ tool, label, icon: ToolIcon }) => (
-                  <Menu.Item
-                    key={tool}
-                    leftSection={<ToolIcon size={16} />}
-                    rightSection={
-                      tool === activeTool && <IconCheck size={16} />
-                    }
-                    onClick={() => onToolChange(tool)}
-                  >
-                    {label}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
           )}
           {end}
         </Group>

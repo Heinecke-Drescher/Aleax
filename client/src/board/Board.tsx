@@ -65,6 +65,7 @@ import { useTokenHover } from "./tokens/useTokenHover";
 import { heldTokensClip } from "./tokens/heldTokens";
 import { HeldTokensHint } from "./tokens/HeldTokensHint";
 import { MapImageAlignHint } from "./map/MapImageAlignHint";
+import { MapResizeHint } from "./map/MapResizeHint";
 import { ToolbarHint } from "./ToolbarHint";
 import { HeldTokensPreview } from "./tokens/HeldTokensPreview";
 import { isOnToken } from "./tokens/tokenNodes";
@@ -104,6 +105,7 @@ export interface BoardHandle {
   focusToken: (id: string) => void;
   openTokenMenu: (id: string, event: ReactMouseEvent) => void;
   alignMapImage: () => void;
+  resizeCanvas: () => void;
   throwDie: (sides: DieSides, samples: ScreenSample[]) => void;
   holdTokens: (tokens: HeldToken[]) => void;
   dropToken: (id: string, point: Vector2d) => void;
@@ -230,7 +232,7 @@ export function Board({
         input.dropTool();
         selection.clear();
         setHeld(null);
-        if (tool === "alignImage") setTool("select");
+        if (tool === "alignImage" || tool === "resize") setTool("select");
       },
     ],
     ["mod+C", clipboard.copy, keepDefault],
@@ -323,6 +325,7 @@ export function Board({
     focusToken,
     openTokenMenu,
     alignMapImage: () => changeTool("alignImage"),
+    resizeCanvas: () => changeTool("resize"),
     throwDie: dieDrop.rollFromScreen,
     holdTokens,
     dropToken: drops.copyTokenFromScreen,
@@ -489,6 +492,11 @@ export function Board({
       ) : tool === "alignImage" && mapImagePlace ? (
         <MapImageAlignHint
           place={mapImagePlace}
+          onDone={() => changeTool("select")}
+          axisShift={axisShift}
+        />
+      ) : tool === "resize" ? (
+        <MapResizeHint
           onDone={() => changeTool("select")}
           axisShift={axisShift}
         />

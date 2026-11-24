@@ -9,7 +9,7 @@ interface SceneItems {
 }
 
 export function MapMenuItems({
-  actions: { files, mapImage, background, drawings },
+  actions: { files, mapImage, background, drawings, resizeCanvas },
   scene,
 }: {
   actions: MapActions;
@@ -34,6 +34,7 @@ export function MapMenuItems({
           <Menu.Divider />
         </>
       )}
+      <Menu.Item onClick={resizeCanvas}>Resize canvas</Menu.Item>
       {mapImage.canSet && (
         <Menu.Item onClick={mapImage.chooseMapImage}>Set map image</Menu.Item>
       )}
@@ -45,7 +46,7 @@ export function MapMenuItems({
           Set background
         </Menu.Item>
       )}
-      {(mapImage.canSet || background.canSet) && <Menu.Divider />}
+      <Menu.Divider />
       {files.canImport && (
         <Menu.Item onClick={files.importMap}>Import map</Menu.Item>
       )}
