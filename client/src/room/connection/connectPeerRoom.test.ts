@@ -63,6 +63,15 @@ function createNetwork() {
     for (const handler of second.joinHandlers) handler(a);
   }
 
+  function disconnect(a: string, b: string) {
+    const first = members.get(a);
+    const second = members.get(b);
+    if (!first || !second) throw new Error("Unknown member");
+    links.delete([a, b].sort().join());
+    for (const handler of first.leaveHandlers) handler(b);
+    for (const handler of second.leaveHandlers) handler(a);
+  }
+
   function leave(id: string) {
     members.delete(id);
     for (const other of members.values()) {
@@ -72,7 +81,7 @@ function createNetwork() {
     }
   }
 
-  return { peersOf, connect, leave };
+  return { peersOf, connect, disconnect, leave };
 }
 
 function createPlayer(network: ReturnType<typeof createNetwork>, id: string) {
@@ -185,6 +194,36 @@ describe("linkPeers", () => {
     expect(guest.awareness.getStates().has(host.awareness.clientID)).toBe(
       false,
     );
+  });
+
+  it("shows a peer again that comes back after a short drop", () => {
+    const host = join("host");
+    const guest = join("guest");
+    host.awareness.setLocalState({ name: "Mira" });
+    network.connect("host", "guest");
+
+    network.disconnect("host", "guest");
+    expect(guest.awareness.getStates().has(host.awareness.clientID)).toBe(
+      false,
+    );
+    network.connect("host", "guest");
+
+    expect(guest.awareness.getStates().get(host.awareness.clientID)).toEqual({
+      name: "Mira",
+    });
+  });
+
+  it("ignores what arrives after unlinking", () => {
+    const host = join("host");
+    const guest = join("guest");
+    guest.unlink();
+
+    host.doc.getMap("tokens").set("t1", "host");
+    network.connect("host", "guest");
+    vi.advanceTimersByTime(ANSWER_SYNC_MS);
+
+    expect(guest.doc.getMap("tokens").has("t1")).toBe(false);
+    expect(guest.onSynced).not.toHaveBeenCalled();
   });
 
   it("stops sending after unlinking", () => {

@@ -43,7 +43,6 @@ export function connectPeerRoom(
   const savedCopy = new IndexeddbPersistence(`aleax-room-${roomId}`, doc);
   let hasLeft = false;
   let hasJoined = false;
-  let canSave = true;
   let leavePeers = () => {};
   function meetPeers() {
     if (hasLeft || hasJoined) return;
@@ -55,20 +54,26 @@ export function connectPeerRoom(
   void savedCopy.whenSynced.then(meetPeers);
   // `whenSynced` never settles when the database cannot open, so the room
   // goes on without a copy in this browser.
-  savedCopy._db.catch((error: unknown) => {
-    canSave = false;
-    if (hasLeft) return;
-    notifyError("This browser cannot save the room", error);
-    meetPeers();
-  });
+  const canSave = savedCopy._db.then(
+    () => true,
+    (error: unknown) => {
+      if (!hasLeft) {
+        notifyError("This browser cannot save the room", error);
+        meetPeers();
+      }
+      return false;
+    },
+  );
   return {
     awareness,
     disconnect: () => {
       hasLeft = true;
       leavePeers();
       awareness.destroy();
-      // Closing waits for the database, which failed then.
-      if (canSave) void savedCopy.destroy();
+      // Closing waits for the database, so only one that opened can close.
+      void canSave.then((isOpen) => {
+        if (isOpen) return savedCopy.destroy();
+      });
     },
   };
 }
@@ -156,6 +161,7 @@ export function linkPeers(
   const presence = peers.channel("awareness");
   const clientsOfPeer = new Map<string, Set<number>>();
   let isSynced = false;
+  let isLinked = true;
   let syncTimer: ReturnType<typeof setTimeout> | undefined;
 
   function markSynced() {
@@ -172,33 +178,55 @@ export function linkPeers(
     syncTimer = setTimeout(markSynced, ms);
   }
 
-  peers.onPeerJoin((peerId) => {
-    stateVectors.send(Y.encodeStateVector(doc), peerId);
-    presence.send(
-      encodeAwarenessUpdate(awareness, [awareness.clientID]),
-      peerId,
-    );
-    if (!isSynced) syncAfter(ANSWER_SYNC_MS);
-  });
+  // Messages can still come in while the room is being left.
+  function whileLinked<T extends unknown[]>(handler: (...args: T) => void) {
+    return (...args: T) => {
+      if (isLinked) handler(...args);
+    };
+  }
 
-  peers.onPeerLeave((peerId) => {
-    const clients = clientsOfPeer.get(peerId);
-    clientsOfPeer.delete(peerId);
-    if (clients) removeAwarenessStates(awareness, [...clients], peers);
-  });
+  peers.onPeerJoin(
+    whileLinked((peerId: string) => {
+      stateVectors.send(Y.encodeStateVector(doc), peerId);
+      presence.send(
+        encodeAwarenessUpdate(awareness, [awareness.clientID]),
+        peerId,
+      );
+      if (!isSynced) syncAfter(ANSWER_SYNC_MS);
+    }),
+  );
 
-  stateVectors.onMessage((stateVector, peerId) => {
-    missing.send(Y.encodeStateAsUpdate(doc, stateVector), peerId);
-  });
-  missing.onMessage((update) => {
-    Y.applyUpdate(doc, update, peers);
-    markSynced();
-  });
-  updates.onMessage((update) => Y.applyUpdate(doc, update, peers));
-  presence.onMessage((update, peerId) => {
-    const origin: PeerOrigin = { peerId };
-    applyAwarenessUpdate(awareness, update, origin);
-  });
+  peers.onPeerLeave(
+    whileLinked((peerId: string) => {
+      const clients = [...(clientsOfPeer.get(peerId) ?? [])];
+      clientsOfPeer.delete(peerId);
+      removeAwarenessStates(awareness, clients, peers);
+      // A peer that comes back sends its presence with the same clock, which
+      // only counts as new once the old one is forgotten.
+      for (const clientId of clients) awareness.meta.delete(clientId);
+    }),
+  );
+
+  stateVectors.onMessage(
+    whileLinked((stateVector: Uint8Array, peerId: string) => {
+      missing.send(Y.encodeStateAsUpdate(doc, stateVector), peerId);
+    }),
+  );
+  missing.onMessage(
+    whileLinked((update: Uint8Array) => {
+      Y.applyUpdate(doc, update, peers);
+      markSynced();
+    }),
+  );
+  updates.onMessage(
+    whileLinked((update: Uint8Array) => Y.applyUpdate(doc, update, peers)),
+  );
+  presence.onMessage(
+    whileLinked((update: Uint8Array, peerId: string) => {
+      const origin: PeerOrigin = { peerId };
+      applyAwarenessUpdate(awareness, update, origin);
+    }),
+  );
 
   function sendOwnUpdate(update: Uint8Array, origin: unknown) {
     if (origin !== peers) updates.send(update);
@@ -229,6 +257,7 @@ export function linkPeers(
   syncAfter(ALONE_SYNC_MS);
 
   return () => {
+    isLinked = false;
     clearTimeout(syncTimer);
     doc.off("update", sendOwnUpdate);
     awareness.off("update", handlePresence);
