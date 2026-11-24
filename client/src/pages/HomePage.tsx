@@ -14,6 +14,10 @@ import { RecentRooms } from "../recentRooms/RecentRooms";
 import { IS_PEER_TO_PEER } from "../room/connection/connectRoom";
 import { NEW_ROOM_STATE } from "./newRoom";
 
+// The guide in the README, as the website itself points to no server of its own.
+const SERVER_GUIDE =
+  "https://github.com/Heinecke-Drescher/Aleax#host-a-game-for-your-friends";
+
 export function HomePage() {
   const navigate = useNavigate();
 
@@ -35,6 +39,14 @@ export function HomePage() {
             is cleared, a private window is closed, space runs low or the site
             was not visited for a while. Another browser or device has no copy.
             To keep a room, use <b>Export map</b> in the map menu.
+            <Text size="sm" mt="xs">
+              This version connects the players directly (peer to peer). For
+              rooms that are saved automatically, run Aleax on a server:{" "}
+              <Anchor href={SERVER_GUIDE} target="_blank" size="sm">
+                Host a game on a server
+              </Anchor>
+              .
+            </Text>
           </Alert>
         )}
         <Button
