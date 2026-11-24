@@ -1,4 +1,5 @@
 import { joinRoom, type Room } from "trystero";
+import { IndexeddbPersistence } from "y-indexeddb";
 import {
   Awareness,
   applyAwarenessUpdate,
@@ -6,6 +7,7 @@ import {
   removeAwarenessStates,
 } from "y-protocols/awareness";
 import * as Y from "yjs";
+import { notifyError } from "../../notifyError";
 import type { RoomConnection, RoomEvents } from "./connectRoom";
 
 // Public relays are shared by many apps, so the id has to be unique to Aleax.
@@ -31,28 +33,63 @@ interface PeerOrigin {
 export function connectPeerRoom(
   roomId: string,
   doc: Y.Doc,
-  { onSynced, onConnectionChange }: RoomEvents,
+  events: RoomEvents,
 ): RoomConnection {
-  // The room id is the secret of the room link, so the relays only see
-  // offers that nobody without the link can read.
-  const room = joinRoom({ appId: APP_ID, password: roomId }, roomId);
   const awareness = new Awareness(doc);
-  const unlink = linkPeers(doc, awareness, trysteroPeers(room), () =>
-    onSynced(true),
-  );
+  // Without a server every browser keeps its own copy of the room.
+  const savedCopy = new IndexeddbPersistence(`aleax-room-${roomId}`, doc);
   let hasLeft = false;
-  room.ready.then(
-    () => !hasLeft && onConnectionChange("connected"),
-    () => !hasLeft && onConnectionChange("disconnected"),
-  );
+  let hasJoined = false;
+  let canSave = true;
+  let leavePeers = () => {};
+  function meetPeers() {
+    if (hasLeft || hasJoined) return;
+    hasJoined = true;
+    leavePeers = joinPeers(roomId, doc, awareness, events, () => hasLeft);
+  }
+  // Meeting the others only after loading the copy lets the state vectors
+  // tell them what this browser already has.
+  void savedCopy.whenSynced.then(meetPeers);
+  // `whenSynced` never settles when the database cannot open, so the room
+  // goes on without a copy in this browser.
+  savedCopy._db.catch((error: unknown) => {
+    canSave = false;
+    if (hasLeft) return;
+    notifyError("This browser cannot save the room", error);
+    meetPeers();
+  });
   return {
     awareness,
     disconnect: () => {
       hasLeft = true;
-      unlink();
+      leavePeers();
       awareness.destroy();
-      void room.leave();
+      // Closing waits for the database, which failed then.
+      if (canSave) void savedCopy.destroy();
     },
+  };
+}
+
+function joinPeers(
+  roomId: string,
+  doc: Y.Doc,
+  awareness: Awareness,
+  { onSynced, onConnectionChange }: RoomEvents,
+  hasLeft: () => boolean,
+) {
+  // The room id is the secret of the room link, so the relays only see
+  // offers that nobody without the link can read.
+  const room = joinRoom({ appId: APP_ID, password: roomId }, roomId);
+  const unlink = linkPeers(doc, awareness, trysteroPeers(room), () =>
+    onSynced(true),
+  );
+  room.ready.then(
+    () => !hasLeft() && onConnectionChange("connected"),
+    () => !hasLeft() && onConnectionChange("disconnected"),
+  );
+  return () => {
+    unlink();
+    void room.leave();
   };
 }
 
