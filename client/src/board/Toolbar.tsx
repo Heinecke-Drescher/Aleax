@@ -112,11 +112,10 @@ export function Toolbar({
   // A narrow screen, e.g. a phone, leaves out most dividers to fit all tools.
   const isWide = useWideLayout();
 
-  function toolGroup(tools: ToolGroup, hint: string) {
+  function toolGroup(tools: ToolGroup) {
     return (
       <ToolGroupButton
         tools={tools}
-        hint={hint}
         activeTool={activeTool}
         onToolChange={onToolChange}
       />
@@ -155,7 +154,7 @@ export function Toolbar({
         <Group gap={4} wrap="nowrap">
           {MAP_TOOLS.map(toolButton)}
           <Divider orientation="vertical" />
-          {toolGroup(DRAW_TOOLS, "Click again for other ways to draw")}
+          {toolGroup(DRAW_TOOLS)}
           {toolButton(ERASER_TOOL)}
           <TextToolButton
             isActive={activeTool === "text"}
@@ -164,7 +163,7 @@ export function Toolbar({
             onSizeChange={onTextSizeChange}
           />
           {isWide && <Divider orientation="vertical" />}
-          {toolGroup(SHAPE_TOOLS, "Click again for other areas")}
+          {toolGroup(SHAPE_TOOLS)}
           <Popover
             opened={isPicking}
             onDismiss={picking.close}
@@ -210,10 +209,7 @@ export function Toolbar({
           {isDm && (
             <>
               {isWide && <Divider orientation="vertical" />}
-              {toolGroup(
-                FOG_TOOLS,
-                "Click again to switch hiding and revealing",
-              )}
+              {toolGroup(FOG_TOOLS)}
             </>
           )}
           {end}
