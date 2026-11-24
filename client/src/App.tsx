@@ -22,7 +22,7 @@ export function App() {
         {/* A menu lies above the panels, so it has the stronger shadow of all menus. */}
         <ContextMenuProvider shadow="md" borderRadius={MENU_RADIUS}>
           <MotionConfig reducedMotion="user">
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/r/:roomId" element={<RoomPage />} />
