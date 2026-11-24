@@ -9,11 +9,14 @@ import {
 import * as Y from "yjs";
 import { notifyError } from "../../notifyError";
 import type { RoomConnection, RoomEvents } from "./connectRoom";
+import { parseTurnServers } from "./turnServers";
 
 // Public relays are shared by many apps, so the id has to be unique to Aleax.
 const APP_ID = "github.com/Heinecke-Drescher/Aleax";
 export const ALONE_SYNC_MS = 3000;
 export const ANSWER_SYNC_MS = 10_000;
+// Read when the app loads, so a wrong build fails at once.
+const TURN_SERVERS = parseTurnServers(import.meta.env.VITE_TURN_ICE_SERVERS);
 
 export interface PeerChannel {
   send: (data: Uint8Array, peerId?: string) => void;
@@ -79,7 +82,14 @@ function joinPeers(
 ) {
   // The room id is the secret of the room link, so the relays only see
   // offers that nobody without the link can read.
-  const room = joinRoom({ appId: APP_ID, password: roomId }, roomId);
+  const room = joinRoom(
+    {
+      appId: APP_ID,
+      password: roomId,
+      turnConfig: TURN_SERVERS,
+    },
+    roomId,
+  );
   const unlink = linkPeers(doc, awareness, trysteroPeers(room), () =>
     onSynced(true),
   );
