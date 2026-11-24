@@ -21,7 +21,11 @@ export function HomePage() {
           Create room
         </Button>
         <RecentRooms />
-        <Anchor href="/licenses.txt" size="xs" c="dimmed">
+        <Anchor
+          href={`${import.meta.env.BASE_URL}licenses.txt`}
+          size="xs"
+          c="dimmed"
+        >
           Open source licenses
         </Anchor>
       </Stack>

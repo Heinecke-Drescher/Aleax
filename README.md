@@ -1,8 +1,42 @@
 # Aleax
 
 A shared map and dice roller for tabletop groups: tokens, drawings, fog of war
-and scenes, in real time in the browser. Start Aleax on your computer and send
-the link to your friends.
+and scenes, in real time in the browser. Play straight from the website, or
+start Aleax on your computer and send the link to your friends.
+
+## Play without a server
+
+Open https://heinecke-drescher.github.io/Aleax/, create a room and send its link
+to your friends. Nothing runs on your computer: the browsers find each other
+through public [Nostr](https://nostr.com/) relays and then talk directly.
+
+Good to know:
+
+- Every browser keeps its own copy of the room. Whoever comes back later gets
+  the changes from the others who are in the room.
+- The room link is the key to the room. The relays see only encrypted offers.
+- On mobile data the players often cannot reach each other, as many networks
+  block direct connections. Use Wi-Fi, or host your own copy with a TURN server.
+
+<details>
+<summary>Host your own copy</summary>
+
+1. [Fork](https://github.com/Heinecke-Drescher/Aleax/fork) this repository.
+2. In your fork, open **Settings → Pages** and pick **GitHub Actions** as the
+   source.
+3. Open **Actions**, allow workflows in your fork, pick **Pages** and click
+   **Run workflow**. Your copy is then at `https://<your-name>.github.io/Aleax/`
+   and updates itself with every push to `main`.
+
+For players on mobile data, add a TURN server, which relays the data when a
+direct connection fails. Get one from a provider such as
+[Metered](https://www.metered.ca/), copy its list of ICE servers (JSON, like
+`[{"urls":"turn:…","username":"…","credential":"…"}]`) into a repository secret
+named `VITE_TURN_ICE_SERVERS` (**Settings → Secrets and variables → Actions**)
+and run the workflow again. Anyone who opens your page can read these
+credentials and use your TURN traffic, so keep an eye on it.
+
+</details>
 
 ## Host a game for your friends
 
@@ -97,12 +131,14 @@ sync server together.
 | `npm run lint`         | Lints the code with oxlint       |
 | `npm run format`       | Formats all files with Prettier  |
 | `npm run format:check` | Checks formatting without fixing |
+| `npm run dev:p2p`      | The website without a server     |
+| `npm run preview:p2p`  | Builds and previews it on :4173  |
 
 | Folder                         | Contents                                                       |
 | ------------------------------ | -------------------------------------------------------------- |
 | `client/`                      | The website: React, Mantine and Konva                          |
 | `client/src/room/`             | Room state in Yjs and its rules; the only code that changes it |
-| `client/src/room/connection/`  | Connection to the sync server, presence, cursors and pings     |
+| `client/src/room/connection/`  | Connection to the server or peers, presence, cursors and pings |
 | `client/src/board/`            | Everything drawn on the map (Konva) and map input, by feature  |
 | `client/src/dice/`, `tokens/`… | One feature off the map: its panels, bars, menus and hooks     |
 | `client/src/pages/`            | Start page, room page and the parts of its header              |
