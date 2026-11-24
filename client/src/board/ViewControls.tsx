@@ -19,6 +19,7 @@ export function ViewControls({
   onFitMap,
 }: ViewControlsProps) {
   // The same place on every layout, as narrow ones keep the lower right corner for the tokens.
+  // Undo, used most, ends the row: away from the screen's edge and near a right thumb.
   return (
     <FloatingPanel
       pos="absolute"
@@ -27,8 +28,6 @@ export function ViewControls({
       p={FLOATING_PADDING}
     >
       <Group gap={4} wrap="nowrap">
-        <UndoButtons />
-        <Divider orientation="vertical" />
         <Tooltip label="Zoom out (Ctrl+wheel)" position="top">
           <ActionIcon
             variant="subtle"
@@ -63,6 +62,8 @@ export function ViewControls({
             <IconZoomScan size={20} />
           </ActionIcon>
         </Tooltip>
+        <Divider orientation="vertical" />
+        <UndoButtons />
       </Group>
     </FloatingPanel>
   );
