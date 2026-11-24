@@ -15,7 +15,7 @@ import { CELL_SIZE, type Square } from "../../room/grid";
 import { validMapText } from "../../room/texts";
 import { validToken } from "../../room/tokens";
 import { liftTokens } from "../tokens/liftTokens";
-import { FINGER_OFFSET, isFinger } from "../../finger";
+import { clientPoint, FINGER_OFFSET, isFinger } from "../../finger";
 import { screenPointOnMap } from "../dropPoint";
 import { endAboveFinger, tokenLift } from "../tools/fingerOffset";
 import type { Measurement } from "../tools/measurement";
@@ -83,10 +83,7 @@ export function useItemDrag(room: Room, selected: Items) {
         byFinger && grabbedToken
           ? tokenLift(
               grabbedToken,
-              screenPointOnMap(stage, {
-                x: event.evt.clientX,
-                y: event.evt.clientY,
-              }).y,
+              screenPointOnMap(stage, clientPoint(event.evt)).y,
               stage.scaleY(),
             )
           : FINGER_OFFSET,
