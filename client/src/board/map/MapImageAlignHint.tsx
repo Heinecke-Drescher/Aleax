@@ -1,6 +1,6 @@
 import { ActionIcon, Button, NumberInput, Text, Tooltip } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconRotateClockwise } from "@tabler/icons-react";
+import { IconMinus, IconPlus, IconRotateClockwise } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { CELL_SIZE, MAX_MAP_CELLS, MIN_MAP_CELLS } from "../../room/grid";
 import {
@@ -52,28 +52,38 @@ export function MapImageAlignHint({
   }
 
   const applyTyped = useDebouncedCallback(scaleTo, TYPING_PAUSE);
-  // Mantine hands a step and a keystroke to onChange alike, so the press says which it was.
+  // Mantine hands an arrow key and a keystroke to onChange alike, so the key says which it was.
   const isStepping = useRef(false);
+
+  function step(by: number) {
+    applyTyped.cancel();
+    setTyped(null);
+    scaleTo(columns + by);
+  }
 
   return (
     <ToolbarHint axisShift={axisShift}>
       <Text size="sm">Width</Text>
+      <ActionIcon
+        variant="default"
+        aria-label="Fewer cells"
+        disabled={columns <= MIN_MAP_CELLS}
+        onClick={() => step(-1)}
+      >
+        <IconMinus size={18} />
+      </ActionIcon>
       <NumberInput
         aria-label="Width in cells"
         size="xs"
-        w={72}
+        w={48}
+        hideControls
         min={MIN_MAP_CELLS}
         max={MAX_MAP_CELLS}
         allowDecimal={false}
         allowNegative={false}
         clampBehavior="none"
         value={typed ?? columns}
-        rightSectionProps={{
-          onPointerDownCapture: () => {
-            isStepping.current = true;
-          },
-        }}
-        // Arrows apply at once; typing waits, as 100 passes through 10 on its way.
+        // Arrow keys apply at once; typing waits, as 100 passes through 10 on its way.
         onChange={(value) => {
           if (isStepping.current) {
             isStepping.current = false;
@@ -94,6 +104,14 @@ export function MapImageAlignHint({
           setTyped(null);
         }}
       />
+      <ActionIcon
+        variant="default"
+        aria-label="More cells"
+        disabled={columns >= MAX_MAP_CELLS}
+        onClick={() => step(1)}
+      >
+        <IconPlus size={18} />
+      </ActionIcon>
       <Text size="sm" style={{ whiteSpace: "nowrap" }}>
         cells · Height {rows}
       </Text>
