@@ -2,10 +2,12 @@ import {
   ActionIcon,
   Button,
   createTheme,
+  type CSSVariablesResolver,
   type MantineTransition,
   Menu,
   Modal,
   Popover,
+  Tabs,
   Tooltip,
   useMantineTheme,
 } from "@mantine/core";
@@ -16,9 +18,11 @@ export const TOOLTIP_DELAY = 500;
 // Menus and popovers round their corners like the panels floating over the map, and the
 // context menu on the map does the same.
 export const MENU_RADIUS = "md";
-// Everything that only reacts to the mouse, gray buttons, menu items, tabs, shares one gray;
-// blue stays for choosing a tool, as blue means selection.
-export const NEUTRAL_HOVER = "var(--mantine-color-default-hover)";
+const BUTTON_SURFACE = "--aleax-button-surface";
+const BUTTON_HOVER = "--aleax-button-hover";
+// Everything that only reacts to the mouse, gray buttons and tabs, shares one gray; blue stays
+// for choosing a tool, as blue means selection. Menu items keep Mantine's lighter hover gray.
+export const NEUTRAL_HOVER = `var(${BUTTON_HOVER})`;
 // Marks what only this player sees: dice rolled secretly and a scene being prepared, so nothing
 // is kept from the others by mistake.
 export const PRIVATE_OUTLINE = "2px dashed var(--mantine-color-dimmed)";
@@ -39,19 +43,50 @@ function isNeutral(props: { variant?: string; color?: string }) {
   return props.variant === "subtle" && props.color === "gray";
 }
 
+// In light mode the panels are a little darker than the white map, so the map is the brightest
+// place, and the buttons on them are white like the map, as both are what one touches. Grays for
+// hover stay darker than the panel they lie on, a button's two steps, so it does not seem to fade
+// into the panel.
+export const cssVariablesResolver: CSSVariablesResolver = () => ({
+  variables: {},
+  light: {
+    "--mantine-color-body": "var(--mantine-color-gray-1)",
+    "--mantine-color-default-hover": "var(--mantine-color-gray-2)",
+    [BUTTON_SURFACE]: "var(--mantine-color-white)",
+    [BUTTON_HOVER]: "var(--mantine-color-gray-3)",
+  },
+  dark: {
+    [BUTTON_SURFACE]: "transparent",
+    [BUTTON_HOVER]: "var(--mantine-color-default-hover)",
+  },
+});
+
 export const theme = createTheme({
   respectReducedMotion: true,
   components: {
     ActionIcon: ActionIcon.extend({
       classNames: { root: classes.actionIcon },
       vars: (_, props) => ({
-        root: isNeutral(props) ? { "--ai-hover": NEUTRAL_HOVER } : {},
+        root: {
+          ...(props.variant === "subtle" && {
+            "--ai-bg": `var(${BUTTON_SURFACE})`,
+          }),
+          ...(isNeutral(props) && { "--ai-hover": NEUTRAL_HOVER }),
+        },
       }),
     }),
     Button: Button.extend({
       vars: (_, props) => ({
-        root: isNeutral(props) ? { "--button-hover": NEUTRAL_HOVER } : {},
+        root: isNeutral(props)
+          ? {
+              "--button-bg": `var(${BUTTON_SURFACE})`,
+              "--button-hover": NEUTRAL_HOVER,
+            }
+          : {},
       }),
+    }),
+    Tabs: Tabs.extend({
+      classNames: { tab: classes.tab },
     }),
     Menu: Menu.extend({
       defaultProps: {

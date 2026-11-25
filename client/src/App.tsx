@@ -12,11 +12,15 @@ import { MotionConfig } from "motion/react";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { HomePage } from "./pages/HomePage";
 import { RoomPage } from "./pages/RoomPage";
-import { MENU_RADIUS, theme } from "./theme";
+import { cssVariablesResolver, MENU_RADIUS, theme } from "./theme";
 
 export function App() {
   return (
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider
+      theme={theme}
+      cssVariablesResolver={cssVariablesResolver}
+      defaultColorScheme="dark"
+    >
       <Notifications />
       <ModalsProvider>
         {/* A menu lies above the panels, so it has the stronger shadow of all menus. */}
