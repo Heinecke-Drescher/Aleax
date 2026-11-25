@@ -1,6 +1,6 @@
-import { ActionIcon, Group, Menu, Stack, Title, Tooltip } from "@mantine/core";
+import { ActionIcon, Group, Stack, Title, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconPlus } from "@tabler/icons-react";
+import { IconCategory, IconPlus } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useImageFileDialog } from "../images/useImageFileDialog";
 import { notifyError } from "../notifyError";
@@ -42,34 +42,32 @@ export function TokenPanel() {
     <Stack gap="xs" mih={0} flex={1} style={{ contain: "inline-size" }}>
       <Group justify="space-between" wrap="nowrap">
         <Title order={4}>Tokens</Title>
-        <Menu position="bottom-end" shadow="md">
-          <Menu.Target>
-            <Tooltip label="Add tokens">
-              <ActionIcon variant="subtle" color="gray" aria-label="Add tokens">
-                <IconPlus size={18} />
-              </ActionIcon>
-            </Tooltip>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item
-              onClick={() =>
-                void openImageChoice({
-                  title: "Upload images",
-                  kind: "token",
-                  multiple: true,
-                  confirmLabel: "Add",
-                  onChoose: holdRecentImages,
-                  onUpload: chooseTokens,
-                })
-              }
-            >
-              Upload images
-            </Menu.Item>
-            <Menu.Item onClick={placeholderModal.open}>
-              Add placeholders
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+        <Tooltip label="Add tokens">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            aria-label="Add tokens"
+            onClick={() =>
+              void openImageChoice({
+                title: "Add tokens",
+                kind: "token",
+                multiple: true,
+                confirmLabel: "Add",
+                onChoose: holdRecentImages,
+                onUpload: chooseTokens,
+                moreTiles: [
+                  {
+                    label: "Placeholders",
+                    icon: <IconCategory size={20} />,
+                    onClick: placeholderModal.open,
+                  },
+                ],
+              })
+            }
+          >
+            <IconPlus size={18} />
+          </ActionIcon>
+        </Tooltip>
       </Group>
       {/* Measures its scrolling, so rows dragged in a scrolled list land where they are shown. */}
       <motion.div

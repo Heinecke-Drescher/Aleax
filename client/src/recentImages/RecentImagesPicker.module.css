@@ -15,13 +15,14 @@
   }
 }
 
-.upload {
+.tile {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 64px;
+  min-width: 64px;
   height: 64px;
+  padding-inline: var(--mantine-spacing-xs);
   border: 1px dashed var(--mantine-color-default-border);
   color: var(--mantine-color-dimmed);
 

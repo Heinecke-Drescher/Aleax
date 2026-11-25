@@ -1,6 +1,10 @@
 import { modals } from "@mantine/modals";
 import { notifyError } from "../notifyError";
-import { recentImages, type RecentImageKind } from "./recentImages";
+import {
+  recentImages,
+  type RecentImage,
+  type RecentImageKind,
+} from "./recentImages";
 import {
   RecentImagesPicker,
   type RecentImagesPickerProps,
@@ -14,21 +18,19 @@ interface ImageChoice extends Omit<
   kind: RecentImageKind;
 }
 
-// Without recent images there is nothing to pick from, so the file dialog opens at once, as it
-// did before there were recent images; the read is short, so the browser should still count the
+// With nothing to pick from, the file dialog opens at once, as it did before there were recent
+// images; the read is short, so the browser should still count the
 // file dialog as opened by the press (transient user activation lasts a few seconds). The picker
 // goes through Mantine's modal manager, so a menu item can open it without a dialog mounted
 // beside every menu.
 export async function openImageChoice({ title, kind, ...choice }: ImageChoice) {
-  let images;
+  let images: RecentImage[] = [];
   try {
     images = await recentImages(kind);
   } catch (error) {
     notifyError("Could not read recent images", error);
-    choice.onUpload();
-    return;
   }
-  if (images.length === 0) {
+  if (images.length === 0 && choice.moreTiles.length === 0) {
     choice.onUpload();
     return;
   }

@@ -72,6 +72,7 @@ export function useMapImageFile(onAlign: () => void) {
         confirmLabel: "Set",
         onChoose: (images) => void setRecentMapImage(onlyChosen(images)),
         onUpload: uploadMapImage,
+        moreTiles: [],
       }),
     alignMapImage: onAlign,
     removeMapImage: room.removeMapImage,

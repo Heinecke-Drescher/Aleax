@@ -7,9 +7,15 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import classes from "./RecentImagesPicker.module.css";
 import type { RecentImage } from "./recentImages";
+
+export interface ChoiceTile {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+}
 
 export interface RecentImagesPickerProps {
   images: RecentImage[];
@@ -18,6 +24,8 @@ export interface RecentImagesPickerProps {
   confirmLabel: string;
   onChoose: (images: RecentImage[]) => void;
   onUpload: () => void;
+  // Other ways to add, shown beside "Upload"; with them the dialog opens even without images.
+  moreTiles: ChoiceTile[];
   onDone: () => void;
 }
 
@@ -27,8 +35,13 @@ export function RecentImagesPicker({
   confirmLabel,
   onChoose,
   onUpload,
+  moreTiles,
   onDone,
 }: RecentImagesPickerProps) {
+  const tiles: ChoiceTile[] = [
+    { label: "Upload", icon: <IconUpload size={20} />, onClick: onUpload },
+    ...moreTiles,
+  ];
   const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
 
   function toggle(id: string) {
@@ -43,16 +56,19 @@ export function RecentImagesPicker({
   return (
     <Stack>
       <Group gap="xs">
-        <UnstyledButton
-          className={`${classes.image} ${classes.upload}`}
-          onClick={() => {
-            onUpload();
-            onDone();
-          }}
-        >
-          <IconUpload size={20} />
-          <Text size="xs">Upload</Text>
-        </UnstyledButton>
+        {tiles.map(({ label, icon, onClick }) => (
+          <UnstyledButton
+            key={label}
+            className={`${classes.image} ${classes.tile}`}
+            onClick={() => {
+              onClick();
+              onDone();
+            }}
+          >
+            {icon}
+            <Text size="xs">{label}</Text>
+          </UnstyledButton>
+        ))}
         {images.map((image) => (
           <Tooltip
             key={image.id}

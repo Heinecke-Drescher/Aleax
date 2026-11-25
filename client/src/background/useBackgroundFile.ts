@@ -42,6 +42,7 @@ export function useBackgroundFile() {
         confirmLabel: "Set",
         onChoose: (images) => setRecentBackground(onlyChosen(images)),
         onUpload: uploadBackground,
+        moreTiles: [],
       }),
     removeBackground: room.removeBackground,
   };
