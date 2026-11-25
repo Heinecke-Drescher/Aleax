@@ -97,6 +97,11 @@ export function forgetImage(id: string) {
   return del(id, recentStore());
 }
 
+// Puts back an image just forgotten, as it was, so it keeps its place in the list.
+export function restoreImage(image: RecentImage) {
+  return set(image.id, image, recentStore());
+}
+
 // What lies in the browser's storage is not checked by anyone else, so only valid entries and
 // their known fields are read.
 function isRecentImage(value: unknown): value is RecentImage {

@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { forgetImage, recentImages, rememberImage } from "./recentImages";
+import {
+  forgetImage,
+  recentImages,
+  rememberImage,
+  restoreImage,
+} from "./recentImages";
 
 const stored = new Map<string, unknown>();
 
@@ -107,6 +112,25 @@ describe("recent images", () => {
     await forgetImage(orc.id);
 
     expect((await recentImages("token")).map(({ name }) => name)).toEqual([
+      "Goblin",
+    ]);
+  });
+
+  it("brings back a forgotten image at its old place", async () => {
+    await remember("token", "Goblin", image(1));
+    await remember("token", "Orc", image(2));
+    await remember("token", "Troll", image(3));
+    const orc = (await recentImages("token")).find(
+      ({ name }) => name === "Orc",
+    );
+    if (!orc) throw new Error("Orc is missing");
+
+    await forgetImage(orc.id);
+    await restoreImage(orc);
+
+    expect((await recentImages("token")).map(({ name }) => name)).toEqual([
+      "Troll",
+      "Orc",
       "Goblin",
     ]);
   });

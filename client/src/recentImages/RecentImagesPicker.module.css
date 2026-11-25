@@ -13,6 +13,26 @@
       0 0 0 2px var(--mantine-color-body),
       0 0 0 4px var(--mantine-color-blue-6);
   }
+
+  &:disabled img {
+    opacity: 0.3;
+  }
+}
+
+.entry {
+  position: relative;
+}
+
+.remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
+.undo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
 }
 
 .tile {

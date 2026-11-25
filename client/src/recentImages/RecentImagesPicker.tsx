@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Button,
   Group,
   Stack,
@@ -6,10 +7,11 @@ import {
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
-import { IconUpload } from "@tabler/icons-react";
+import { IconArrowBackUp, IconUpload, IconX } from "@tabler/icons-react";
 import { useState, type ReactNode } from "react";
+import { notifyError } from "../notifyError";
 import classes from "./RecentImagesPicker.module.css";
-import type { RecentImage } from "./recentImages";
+import { forgetImage, restoreImage, type RecentImage } from "./recentImages";
 
 export interface ChoiceTile {
   label: string;
@@ -29,6 +31,12 @@ export interface RecentImagesPickerProps {
   onDone: () => void;
 }
 
+function without(ids: ReadonlySet<string>, id: string) {
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
+}
+
 export function RecentImagesPicker({
   images,
   multiple,
@@ -43,6 +51,8 @@ export function RecentImagesPicker({
     ...moreTiles,
   ];
   const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
+  // Removed images keep their tile until the dialog closes, so a slip can be undone in place.
+  const [removed, setRemoved] = useState<ReadonlySet<string>>(new Set());
 
   function toggle(id: string) {
     setChosen((previous) => {
@@ -51,6 +61,27 @@ export function RecentImagesPicker({
       else next.delete(id);
       return next;
     });
+  }
+
+  async function remove(image: RecentImage) {
+    try {
+      await forgetImage(image.id);
+    } catch (error) {
+      notifyError(`Could not remove ${image.name}`, error);
+      return;
+    }
+    setRemoved((previous) => new Set(previous).add(image.id));
+    setChosen((previous) => without(previous, image.id));
+  }
+
+  async function undoRemove(image: RecentImage) {
+    try {
+      await restoreImage(image);
+    } catch (error) {
+      notifyError(`Could not bring back ${image.name}`, error);
+      return;
+    }
+    setRemoved((previous) => without(previous, image.id));
   }
 
   return (
@@ -69,22 +100,50 @@ export function RecentImagesPicker({
             <Text size="xs">{label}</Text>
           </UnstyledButton>
         ))}
-        {images.map((image) => (
-          <Tooltip
-            key={image.id}
-            label={image.name}
-            disabled={image.name === ""}
-          >
-            <UnstyledButton
-              className={classes.image}
-              aria-label={image.name}
-              aria-pressed={chosen.has(image.id)}
-              onClick={() => toggle(image.id)}
-            >
-              <img src={image.dataUrl} alt="" width={64} height={64} />
-            </UnstyledButton>
-          </Tooltip>
-        ))}
+        {images.map((image) => {
+          const isRemoved = removed.has(image.id);
+          return (
+            <div key={image.id} className={classes.entry}>
+              <Tooltip label={image.name} disabled={image.name === ""}>
+                <UnstyledButton
+                  className={classes.image}
+                  aria-label={image.name}
+                  aria-pressed={chosen.has(image.id)}
+                  disabled={isRemoved}
+                  onClick={() => toggle(image.id)}
+                >
+                  <img src={image.dataUrl} alt="" width={64} height={64} />
+                </UnstyledButton>
+              </Tooltip>
+              {isRemoved ? (
+                <Tooltip label="Undo">
+                  <ActionIcon
+                    className={classes.undo}
+                    variant="default"
+                    radius="xl"
+                    aria-label={`Undo removing ${image.name}`}
+                    onClick={() => void undoRemove(image)}
+                  >
+                    <IconArrowBackUp size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              ) : (
+                <Tooltip label="Remove from recent images">
+                  <ActionIcon
+                    className={classes.remove}
+                    variant="default"
+                    size="sm"
+                    radius="xl"
+                    aria-label={`Remove ${image.name} from recent images`}
+                    onClick={() => void remove(image)}
+                  >
+                    <IconX size={12} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </div>
+          );
+        })}
       </Group>
       <Group justify="flex-end">
         <Button variant="default" onClick={onDone}>
