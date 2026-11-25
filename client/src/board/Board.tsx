@@ -21,6 +21,8 @@ import type { Critical } from "../dice/criticalRoll";
 import type { ScreenSample } from "../useScreenDrag";
 import type { DieSides } from "../room/dice";
 import { useMapImage } from "../room/useMapImage";
+import { useBackgroundFile } from "../background/useBackgroundFile";
+import { useMapImageFile } from "../mapImage/useMapImageFile";
 import { useCanChangeMap } from "../player/useCanChangeMap";
 import { usePlayer } from "../player/PlayerContext";
 import type { Awareness } from "../room/connection/connectRoom";
@@ -209,7 +211,12 @@ export function Board({
     onPaste: () => changeTool("select"),
   });
   const tokenMenu = useTokenMenu(room, selection, clipboard);
-  const boardMenu = useBoardMenu(selection, clipboard);
+  const mapImageFile = useMapImageFile(() => changeTool("alignImage"));
+  const backgroundFile = useBackgroundFile();
+  const boardMenu = useBoardMenu(selection, clipboard, {
+    mapImage: mapImageFile,
+    background: backgroundFile,
+  });
   const sendPing = usePingBroadcast(awareness);
   const drops = useBoardDrops(stageRef, selectToken);
   const dieDrop = useDieDrop({ stageRef });
