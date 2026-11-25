@@ -20,6 +20,7 @@ import {
 import { useRef, type MouseEvent as ReactMouseEvent } from "react";
 import { useFogGuard } from "../../fog/useFogGuard";
 import { createImage, TOKEN_IMAGE } from "../../images/createImage";
+import { rememberUpload } from "../../recentImages/recentImages";
 import { useImageFileDialog } from "../../images/useImageFileDialog";
 import { usePlayer } from "../../player/PlayerContext";
 import { showRoomSpaceError } from "../../images/showRoomSpaceError";
@@ -66,6 +67,7 @@ export function useTokenMenu(
       const token = id === null ? null : validToken(id, room.tokensMap.get(id));
       if (!token) return;
       const image = await createImage(file, TOKEN_IMAGE);
+      rememberUpload("token", file, image);
       room.assertSpaceForImage(image, token.imageId);
       room.setTokenImage(token.id, image);
     },

@@ -8,6 +8,10 @@ export const IMAGE_TYPES = [
   "image/avif",
 ];
 
+export function fileTitle(file: File) {
+  return file.name.replace(/\.[^.]+$/, "");
+}
+
 function imageFileRule(maxMegabytes: number) {
   return `Only PNG, JPEG, WebP, GIF or AVIF up to ${maxMegabytes} MB`;
 }

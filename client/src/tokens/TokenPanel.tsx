@@ -3,6 +3,9 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useImageFileDialog } from "../images/useImageFileDialog";
+import { notifyError } from "../notifyError";
+import { rememberUse, type RecentImage } from "../recentImages/recentImages";
+import { openImageChoice } from "../recentImages/openImageChoice";
 import { useRoom } from "../room/RoomContext";
 import { TOKEN_FILE_MEGABYTES, tokenFromFile } from "./addTokenFromFile";
 import { useHoldTokens } from "./holdTokens";
@@ -20,6 +23,19 @@ export function TokenPanel() {
     onFile: async (file) => holdTokens([await tokenFromFile(room, file)]),
   });
 
+  function holdRecentImages(images: RecentImage[]) {
+    try {
+      room.assertSpaceForImages(images.map(({ dataUrl }) => dataUrl));
+    } catch (error) {
+      notifyError("Could not add tokens", error);
+      return;
+    }
+    images.forEach(rememberUse);
+    holdTokens(
+      images.map(({ name, dataUrl }) => ({ name, imageDataUrl: dataUrl })),
+    );
+  }
+
   return (
     // Fills a panel of limited size and scrolls the list below the title. The containment keeps a
     // long name from widening the panel around it, so the name is cut off instead.
@@ -35,7 +51,20 @@ export function TokenPanel() {
             </Tooltip>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item onClick={chooseTokens}>Upload images</Menu.Item>
+            <Menu.Item
+              onClick={() =>
+                void openImageChoice({
+                  title: "Upload images",
+                  kind: "token",
+                  multiple: true,
+                  confirmLabel: "Add",
+                  onChoose: holdRecentImages,
+                  onUpload: chooseTokens,
+                })
+              }
+            >
+              Upload images
+            </Menu.Item>
             <Menu.Item onClick={placeholderModal.open}>
               Add placeholders
             </Menu.Item>
