@@ -177,7 +177,7 @@ export function Board({
   const itemDrag = useItemDrag(room, items);
   const stageRef = useRef<StageNode>(null);
   const {
-    panOrZoom,
+    zoomAtPointer,
     pinch,
     endPinch,
     panWhereAllowed,
@@ -373,7 +373,7 @@ export function Board({
           )
         }
         onWheel={(event) => {
-          panOrZoom(event);
+          zoomAtPointer(event);
           // The map moved under a still pointer, so tools and cursors follow as if it had moved.
           input.followPointer(event);
         }}

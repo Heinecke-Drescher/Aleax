@@ -28,7 +28,7 @@ export function ViewControls({
       p={FLOATING_PADDING}
     >
       <Group gap={4} wrap="nowrap">
-        <Tooltip label="Zoom out (Ctrl+wheel)" position="top">
+        <Tooltip label="Zoom out (wheel)" position="top">
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -39,7 +39,7 @@ export function ViewControls({
             <IconZoomOut size={20} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Zoom in (Ctrl+wheel)" position="top">
+        <Tooltip label="Zoom in (wheel)" position="top">
           <ActionIcon
             variant="subtle"
             color="gray"

@@ -159,16 +159,12 @@ export function useBoardView(
     return stage;
   }
 
-  // Like drawing tools: the wheel or two fingers pan, Ctrl + wheel zooms.
-  // Pinching a trackpad arrives as a wheel event with Ctrl.
-  function panOrZoom(event: KonvaEventObject<WheelEvent>) {
+  // Like map apps, the wheel zooms. A trackpad pinch arrives as a wheel event with Ctrl,
+  // a two-finger swipe as one without, so both zoom.
+  function zoomAtPointer(event: KonvaEventObject<WheelEvent>) {
     event.evt.preventDefault();
     const stage = mountedStage();
     const delta = wheelPixels(event.evt, stage.size());
-    if (!event.evt.ctrlKey && !event.evt.metaKey) {
-      stage.position({ x: stage.x() - delta.x, y: stage.y() - delta.y });
-      return;
-    }
     if (delta.y === 0) return;
     const pointer = stage.getPointerPosition();
     if (!pointer) throw new Error("Wheel event without stage pointer");
@@ -278,7 +274,7 @@ export function useBoardView(
   }
 
   return {
-    panOrZoom,
+    zoomAtPointer,
     pinch,
     endPinch,
     panWhereAllowed,
