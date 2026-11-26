@@ -1,4 +1,3 @@
-import buttonPress from "./audio/button-press.ogg";
 import dieThrow1 from "./audio/die-throw-1.ogg";
 import dieThrow2 from "./audio/die-throw-2.ogg";
 import dieThrow3 from "./audio/die-throw-3.ogg";
@@ -12,7 +11,6 @@ const SOUND_URLS = {
   natural20: [natural20],
   natural1: [natural1],
   ping: [ping],
-  buttonPress: [buttonPress],
 };
 
 export type SoundName = keyof typeof SOUND_URLS;

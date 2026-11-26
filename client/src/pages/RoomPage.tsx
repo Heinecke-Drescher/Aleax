@@ -68,7 +68,7 @@ import { TAB_WIDTH, TokenDrawer } from "../tokens/TokenDrawer";
 import { SHEET_WIDTH, TokenSheet } from "../tokens/TokenSheet";
 import { TOKENS_TOGGLE_SPACE, TokensToggle } from "../tokens/TokensToggle";
 import { PRIVATE_OUTLINE, usePhoneLayout, useWideLayout } from "../theme";
-import { PlaySoundContext, usePressSound, useSoundPlayer } from "../useSounds";
+import { PlaySoundContext, useSoundPlayer } from "../useSounds";
 import {
   fitsBesideToolbar,
   PANEL_COLUMN_EDGE_GAP,
@@ -121,7 +121,6 @@ function RoomView({ roomId }: { roomId: string }) {
   const criticals = useCriticalRolls(room, isSynced);
   const playSound = useSoundPlayer();
   useDieSound(room, isSynced, playSound);
-  usePressSound(playSound);
   const board = useRef<BoardHandle>(null);
   const [selectedTokens, setSelectedTokens] = useState<readonly string[]>([]);
   // Without a board, e.g. while the map shows an error, there is nothing to find.

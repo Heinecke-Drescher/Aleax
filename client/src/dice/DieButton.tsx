@@ -79,7 +79,7 @@ export function DieButton({
     <UnstyledButton
       className={drag ? classes.draggable : classes.button}
       aria-label={`Roll d${sides}`}
-      mod={{ raised: raise.isRaised && !disabled, "own-sound": true }}
+      mod={{ raised: raise.isRaised && !disabled }}
       disabled={disabled}
       onClick={onRoll}
       onPointerEnter={raise.handlers.onPointerEnter}
