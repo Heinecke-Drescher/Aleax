@@ -52,6 +52,15 @@
   --tab-bg: var(--aleax-button-surface);
 }
 
+/* Set on the elements themselves, so they win over what Mantine sets on their parents. */
+[data-mantine-color-scheme="light"] .segmentIndicator {
+  --sc-color: var(--aleax-light-surface);
+}
+
+[data-mantine-color-scheme="light"] .input[data-variant="default"] {
+  --input-bg: var(--aleax-light-surface);
+}
+
 /* A finger misses small icon buttons easily, so their hit area reaches past the edge; sideways
    only as far as half the 4 px gap between toolbar buttons, so neighbours never overlap. */
 @media (width < 48em) {

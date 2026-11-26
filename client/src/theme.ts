@@ -2,11 +2,13 @@ import {
   ActionIcon,
   Button,
   createTheme,
+  Input,
   type CSSVariablesResolver,
   type MantineTransition,
   Menu,
   Modal,
   Popover,
+  SegmentedControl,
   Tabs,
   Tooltip,
   useMantineTheme,
@@ -20,6 +22,7 @@ export const TOOLTIP_DELAY = 500;
 export const MENU_RADIUS = "md";
 const BUTTON_SURFACE = "--aleax-button-surface";
 const BUTTON_HOVER = "--aleax-button-hover";
+export const LIGHT_SURFACE = "#fdf6e3";
 // Everything that only reacts to the mouse, gray buttons and tabs, shares one gray; blue stays
 // for choosing a tool, as blue means selection. Menu items keep Mantine's lighter hover gray.
 export const NEUTRAL_HOVER = `var(${BUTTON_HOVER})`;
@@ -43,16 +46,18 @@ function isNeutral(props: { variant?: string; color?: string }) {
   return props.variant === "subtle" && props.color === "gray";
 }
 
-// In light mode the panels are a little darker than the white map, so the map is the brightest
-// place, and the buttons on them are white like the map, as both are what one touches. Grays for
-// hover stay darker than the panel they lie on, a button's two steps, so it does not seem to fade
-// into the panel.
+// In light mode the panels are a little darker than the cream map, so the map is the
+// brightest place, and the buttons and fields on them are cream like the map, as both are
+// what one touches. Grays for hover stay darker than the panel they lie on, a button's two
+// steps, so it does not seem to fade into the panel.
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
   variables: {},
   light: {
     "--mantine-color-body": "var(--mantine-color-gray-1)",
     "--mantine-color-default-hover": "var(--mantine-color-gray-2)",
-    [BUTTON_SURFACE]: "var(--mantine-color-white)",
+    "--mantine-color-default": LIGHT_SURFACE,
+    [BUTTON_SURFACE]: LIGHT_SURFACE,
+    "--aleax-light-surface": LIGHT_SURFACE,
     [BUTTON_HOVER]: "var(--mantine-color-gray-3)",
   },
   dark: {
@@ -84,6 +89,12 @@ export const theme = createTheme({
             }
           : {},
       }),
+    }),
+    Input: Input.extend({
+      classNames: { input: classes.input },
+    }),
+    SegmentedControl: SegmentedControl.extend({
+      classNames: { indicator: classes.segmentIndicator },
     }),
     Tabs: Tabs.extend({
       classNames: { tab: classes.tab },

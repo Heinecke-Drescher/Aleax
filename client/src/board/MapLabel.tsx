@@ -1,5 +1,6 @@
 import { useComputedColorScheme, useMantineTheme } from "@mantine/core";
 import { Group, Label, Tag, Text } from "react-konva";
+import { LIGHT_SURFACE } from "../theme";
 import type { LabelPlace } from "./labelPlace";
 
 interface MapLabelProps {
@@ -22,7 +23,7 @@ export function MapLabel({
     <Group x={x} y={y} scaleX={1 / zoom} scaleY={1 / zoom}>
       <Label>
         <Tag
-          fill={dark ? theme.colors.dark[7] : theme.white}
+          fill={dark ? theme.colors.dark[7] : LIGHT_SURFACE}
           stroke={color}
           cornerRadius={4}
           pointerDirection={pointer}
