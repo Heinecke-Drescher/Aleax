@@ -12,5 +12,5 @@ export function mapSurroundColor(
   theme: MantineTheme,
   colorScheme: "light" | "dark",
 ) {
-  return colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.gray[4];
+  return colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.gray[3];
 }

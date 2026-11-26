@@ -2,7 +2,9 @@ import {
   ActionIcon,
   Button,
   createTheme,
+  DEFAULT_THEME,
   Input,
+  type MantineColorsTuple,
   type CSSVariablesResolver,
   type MantineTransition,
   Menu,
@@ -23,6 +25,26 @@ export const MENU_RADIUS = "md";
 const BUTTON_SURFACE = "--aleax-button-surface";
 const BUTTON_HOVER = "--aleax-button-hover";
 export const LIGHT_SURFACE = "#fdf6e3";
+// Warm grays for the cream map; Mantine's own are bluish, which looked like paper on a desk.
+const SAND: MantineColorsTuple = [
+  "#fcf7ec",
+  "#f6edda",
+  "#eee0c4",
+  "#e3d0ab",
+  "#d3bb8f",
+  "#b99d6c",
+  "#937a4f",
+  "#64523a",
+  "#433626",
+  "#2a2118",
+];
+// Dark mode keeps Mantine's grays, which some of its components read there.
+const DARK_MODE_GRAYS = Object.fromEntries(
+  DEFAULT_THEME.colors.gray.map((color, step) => [
+    `--mantine-color-gray-${step}`,
+    color,
+  ]),
+);
 // Everything that only reacts to the mouse, gray buttons and tabs, shares one gray; blue stays
 // for choosing a tool, as blue means selection. Menu items keep Mantine's lighter hover gray.
 export const NEUTRAL_HOVER = `var(${BUTTON_HOVER})`;
@@ -61,6 +83,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     [BUTTON_HOVER]: "var(--mantine-color-gray-3)",
   },
   dark: {
+    ...DARK_MODE_GRAYS,
     [BUTTON_SURFACE]: "transparent",
     [BUTTON_HOVER]: "var(--mantine-color-default-hover)",
   },
@@ -68,6 +91,8 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
 
 export const theme = createTheme({
   respectReducedMotion: true,
+  colors: { gray: SAND },
+  black: SAND[9],
   components: {
     ActionIcon: ActionIcon.extend({
       classNames: { root: classes.actionIcon },
