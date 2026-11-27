@@ -186,3 +186,7 @@ Sounds by Kenney (CC0):
 [Casino Audio](https://kenney.nl/assets/casino-audio),
 [Interface Sounds](https://kenney.nl/assets/interface-sounds) and
 [Music Jingles](https://kenney.nl/assets/music-jingles).
+
+The lettering of the logo is set in
+[Fondamento](https://fonts.google.com/specimen/Fondamento) by Astigmatic
+(SIL Open Font License 1.1).

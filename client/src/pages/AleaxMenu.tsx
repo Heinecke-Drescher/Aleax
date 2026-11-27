@@ -1,7 +1,6 @@
 import {
   Button,
   Menu,
-  Text,
   Title,
   useComputedColorScheme,
   useMantineColorScheme,
@@ -32,6 +31,7 @@ import { useSoundSetting } from "../useSounds";
 import { RoomPeople } from "./RoomPeople";
 import { canShareRoomLink, copyRoomLink, shareRoomLink } from "./roomLink";
 import { useDmControl } from "./useDmControl";
+import { Wordmark } from "./Wordmark";
 
 interface AleaxMenuProps {
   connection: ConnectionState;
@@ -72,9 +72,7 @@ export function AleaxMenu({
               px="xs"
               rightSection={<IconChevronDown size={16} />}
             >
-              <Text span fz="h3" fw={700}>
-                Aleax
-              </Text>
+              <Wordmark height={24} />
             </Button>
           </Menu.Target>
           <Menu.Dropdown>

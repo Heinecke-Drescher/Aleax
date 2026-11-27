@@ -13,6 +13,7 @@ import { createRoomId } from "../../../shared/roomId";
 import { RecentRooms } from "../recentRooms/RecentRooms";
 import { IS_PEER_TO_PEER } from "../room/connection/connectRoom";
 import { NEW_ROOM_STATE } from "./newRoom";
+import { Wordmark } from "./Wordmark";
 
 // The guide in the README, as the website itself points to no server of its own.
 const SERVER_GUIDE =
@@ -25,7 +26,9 @@ export function HomePage() {
     // At least the screen's height, so the notice can make a small phone scroll.
     <Center mih="100dvh" p="md">
       <Stack align="center">
-        <Title>Aleax</Title>
+        <Title>
+          <Wordmark height={56} />
+        </Title>
         <Text c="dimmed">A shared map and dice for your tabletop group.</Text>
         {IS_PEER_TO_PEER && (
           // Without a server, no copy outlives the players' browsers.
